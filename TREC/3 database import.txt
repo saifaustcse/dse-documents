@@ -1,0 +1,174 @@
+
+
+# Create tablespaces for RBCA in local
+--------------------------------------
+select * from dba_data_files;
+SELECT file_name, tablespace_name FROM dba_data_files;
+SELECT *  FROM dba_tablespaces WHERE contents = 'TEMPORARY';
+
+
+create temporary tablespace temp_sms_01 tempfile 'D:\installed_software\oracle11gR2DbServer\file\orcl\temp_sms_01.dbf' size 500M autoextend on;
+create tablespace dsesms01 datafile 'D:\installed_software\oracle11gR2DbServer\file\orcl\dsesms01.dbf' size 2048M reuse autoextend on next 1280K maxsize unlimited extent management local;
+
+create temporary tablespace temp_hrm_01 tempfile 'D:\installed_software\oracle11gR2DbServer\file\orcl\temp_hrm_01.dbf' size 500M autoextend on;
+create tablespace hrm01 datafile 'D:\installed_software\oracle11gR2DbServer\file\orcl\hrm01.dbf' size 2048M reuse autoextend on next 1280K maxsize unlimited extent management local;
+
+create temporary tablespace temp_trec_01 tempfile 'D:\installed_software\oracle11gR2DbServer\file\orcl\temp_trec_01.dbf' size 500M autoextend on;
+create tablespace trec_01 datafile 'D:\installed_software\oracle11gR2DbServer\file\orcl\trec_01.dbf' size 2048M reuse autoextend on next 1280K maxsize unlimited extent management local;​
+
+
+# Create tablespaces for TREC in local
+--------------------------------------
+select * from dba_data_files;
+
+create temporary tablespace temp_trec_dsesms tempfile 'D:\installed_software\oracle11gR2DbServer\file\orcl\temp_trec_dsesms.dbf' size 500M autoextend on;
+create tablespace trec_dsesms datafile 'D:\installed_software\oracle11gR2DbServer\file\orcl\trec_dsesms.dbf' size 2048M reuse autoextend on next 1280K maxsize unlimited extent management local;
+
+create temporary tablespace temp_trec_hrm tempfile 'D:\installed_software\oracle11gR2DbServer\file\orcl\temp_trec_hrm.dbf' size 500M autoextend on;
+create tablespace trec_hrm datafile 'D:\installed_software\oracle11gR2DbServer\file\orcl\trec_hrm.dbf' size 2048M reuse autoextend on next 1280K maxsize unlimited extent management local;
+
+create temporary tablespace temp_trec_trec tempfile 'D:\installed_software\oracle11gR2DbServer\file\orcl\temp_trec_trec.dbf' size 500M autoextend on;
+create tablespace trec_trec datafile 'D:\installed_software\oracle11gR2DbServer\file\orcl\trec_trec.dbf' size 2048M reuse autoextend on next 1280K maxsize unlimited extent management local;
+
+
+# Create tablespaces for TREC in Server
+---------------------------------------
+select * from dba_data_files;
+
+/u01/app/oracle/oradata/DSECES/TREC_01.dbf
+/u01/app/oracle/product/11.2.0/dbhome_1/dbs/trec_dsesms.dbf
+
+
+create temporary tablespace temp_trec_dsesms tempfile '\u01\app\oracle\oradata\DSECES\temp_trec_dsesms.dbf' size 500M autoextend on;
+create tablespace trec_dsesms datafile 'trec_dsesms.dbf' size 2048M reuse autoextend on next 1280K maxsize unlimited extent management local;
+
+create temporary tablespace temp_trec_hrm tempfile '\u01\app\oracle\oradata\DSECES\temp_trec_hrm.dbf' size 500M autoextend on;
+create tablespace trec_hrm datafile 'trec_hrm.dbf' size 2048M reuse autoextend on next 1280K maxsize unlimited extent management local;
+
+create temporary tablespace temp_trec_trec tempfile '\u01\app\oracle\oradata\DSECES\temp_trec_trec.dbf' size 500M autoextend on;
+create tablespace trec_trec datafile 'trec_trec.dbf' size 2048M reuse autoextend on next 1280K maxsize unlimited extent management local;
+
+
+# Drop tablespaces 
+-------------------
+
+DROP TABLESPACE TREC_DSESMS INCLUDING CONTENTS AND DATAFILES CASCADE CONSTRAINTS;
+
+
+# Execute following commands 
+------------------------------
+select * from dba_directories;
+CREATE DIRECTORY oracle_dump_dir AS 'D:\oracle_dump_dir';
+create or replace directory test_dmp_dir AS 'E:\test_dmp_dir';
+
+
+# Create a folder in the following location 
+---------------------------------------------
+
+D:\oracle_dump_dir
+E:\test_dmp_dir
+
+
+# Past exported dump file in the foler 
+----------------------------------------
+dsesms_hrm_trec_16_Mar_2022
+
+
+# Grant file access to sys user by the system user
+----------------------------------------------------
+
+> sqlplus/nolog
+> conn system
+> oracle
+> GRANT read, write ON DIRECTORY oracle_dump_dir TO sys;
+
+# Grant file access to system user by the sys user
+----------------------------------------------------
+> sqlplus/nolog
+> conn sys as sysdba
+> Enter password : oracle  
+> GRANT read, write ON DIRECTORY oracle_dump_dir TO system;
+
+
+# Drop schema if exist
+------------------------
+SQL> drop user dsesms cascade;
+SQL> drop user hrm cascade;
+
+SQL> drop user trec_dsesms cascade;
+SQL> drop user trec_trec cascade;
+
+Dropping connected users in Oracle database :
+SQL> Shutdown immediate;
+SQL> startup restrict;
+SQL> drop user trec cascade;
+
+If you want to re-activate DB normally either reset the server or :
+SQL> Shutdown immediate;
+SQL> startup;
+
+
+# Grant Access for domain user
+------------------------------
+> computer management
+> Local Users and Groups
+> Groups (double click)
+> ora_dba (double click)
+> Add
+> Advanced
+> Find Now
+> Saiful i.e User name
+> OK
+> OK
+> OK
+
+
+# Execute following command in cmd as admin
+---------------------------------------------
+
+impdp \"sys/oracle@172.31.62.20/orcl AS SYSDBA\" directory=oracle_dump_dir schemas = dsesms, hrm, trec dumpfile = sms_hrm_trec_20_Nov_2022.dmp
+
+impdp \"sys/oracle@172.31.62.20/orcl AS SYSDBA\" directory=oracle_dump_dir schemas = trec_dsesms, trec_trec dumpfile = tms_dsesms_hrm_trec_10_May_2023.DMP
+impdp system/oracle@172.31.62.20/orcl directory=oracle_dump_dir schemas = trec_dsesms, trec_trec dumpfile = TMS_DSESMS_TREC_22052024.DMP
+
+impdp system/oracle@172.31.64.200/orcl directory=oracle_dump_dir schemas = dsesms, hrm dumpfile = sms-Job-hrm-10072025_090501.dmp
+impdp system/oracle@172.31.62.20/orcl directory=oracle_dump_dir schemas = dsecns dumpfile = cnsdb_daily.2023-10-23-01-01-01.dmp
+
+
+> server
+
+impdp \"sys/sys123 as sysdba\" directory = dmp_dir schemas = dsesms, hrm, trec dumpfile = newdsesms_02_jan_23.DMP
+
+
+# Connect dsesms schema from LOCAL server using sql developer
+-------------------------------------------------------------
+username : dsesms
+password : dsesms 
+connection type : basic
+role : default
+hostname : 172.31.62.20
+port: 1521
+sid : orcl 
+
+# Connect hrm schema from LOCAL server using sql developer
+-------------------------------------------------------------
+username : hrm
+password : hrm 
+connection type : basic
+role : default
+hostname : 172.31.62.20
+port: 1521
+sid : orcl 
+
+# Connect trec schema from LOCAL server using sql developer
+-------------------------------------------------------------
+username : trec
+password : trec 
+connection type : basic
+role : default
+hostname : 172.31.62.20
+port: 1521
+sid : orcl
+
+
+

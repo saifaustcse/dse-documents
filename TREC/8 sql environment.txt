@@ -1,0 +1,15 @@
+MSSQL Remote Connections issues then connection string issues
+-------------------------------------------------------------
+# download
+https://www.microsoft.com/en-us/download/details.aspx?id=55994
+
+# Mixed Mood:
+https://www.top-password.com/knowledge/sql-server-authentication-mode.html
+https://www.top-password.com/knowledge/change-sql-server-password.html
+
+# Enable Remote Connections to SQL Server using IP address:
+https://knowledgebase.apexsql.com/configure-remote-access-connect-remote-sql-server-instance-apexsql-tools/
+https://www.sqlshack.com/how-to-connect-to-a-remote-sql-server/
+
+# Connectionstrings:
+https://www.connectionstrings.com/sql-server/

@@ -1,0 +1,13 @@
+
+# Execute following command in cmd 
+-----------------------------------
+
+> expdp \"sys/oracle@172.31.62.20/orcl AS SYSDBA\" directory=oracle_dump_dir schemas = dsesms, hrm, trec dumpfile = dsesms_hrm_trec_31_Aug_2022.dmp
+
+> expdp \"sys/oracle@172.31.62.20/orcl AS SYSDBA\" directory=oracle_dump_dir schemas = trec_dsesms, trec_trec dumpfile = tms_dsesms_trec_02102024.dmp logfile=expdp_log.log
+
+> expdp \"sys/oracle@172.31.62.20/orcl AS SYSDBA\" directory=oracle_dump_dir dumpfile = tms_dsesms_hrm_trec_17_Apr_2024.dmp full=y
+
+tanzin command
+
+> expdp sys/abcd1234@192.168.1.103/dsesms schemas = dsesms, hrm, trec directory=dpdir dumpfile=mydumpfile.dmp logfile=mylogfile.log;

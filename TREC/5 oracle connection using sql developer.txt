@@ -1,0 +1,112 @@
+
+
+**************************************************************
+                      RBCA PRODUCTION
+**************************************************************
+
+connection type : Basic
+role : SYSDBA
+hostname : 10.228.2.139
+port: 1521
+sid : dseerpdb 
+
+# Connect sys schema using sql developer:
+-----------------------------------------
+username : sys
+password : SYS123 
+
+# Connect system schema using sql developer:
+--------------------------------------------
+username : system
+password : manager123 
+
+
+# Connect dsesms schema using sql developer:
+--------------------------------------------
+username : dsesms
+password : dsesms 
+
+# Connect hrm schema using sql developer:
+-----------------------------------------
+username : hrm
+password : hrm 
+
+# Connect trec schema using sql developer:
+------------------------------------------
+username : trec
+password : trec 
+
+
+**************************************************************
+                         RBCA UAT
+**************************************************************
+
+connection type : Basic
+role : SYSDBA
+hostname : 10.228.2.137
+port: 1522
+sid : dseces 
+
+# Connect sys schema using sql developer:
+-----------------------------------------
+username : sys
+password : SYS123 
+
+# Connect system schema using sql developer:
+--------------------------------------------
+username : system
+password : SYSTEM123 
+
+# Connect dsesms schema using sql developer:
+--------------------------------------------
+username : dsesms
+password : dsesms 
+
+# Connect hrm schema using sql developer:
+----------------------------------------
+username : hrm
+password : hrm 
+
+# Connect trec schema using sql developer:
+------------------------------------------
+username : trec
+password : trec 
+
+
+**************************************************************
+                      RBCA TEST
+**************************************************************
+
+connection type : Basic
+role : SYSDBA
+hostname : 10.228.2.136
+port: 1522
+sid : dseces 
+
+# Connect sys schema using sql developer:
+-----------------------------------------
+username : sys
+password : SYS123 
+
+
+# Connect system schema using sql developer:
+---------------------------------------------
+username : system
+password : SYSTEM123 
+
+# Connect dsesms schema using sql developer:
+--------------------------------------------
+username : dsesms
+password : dsesms 
+
+# Connect hrm schema  using sql developer:
+------------------------------------------
+username : hrm
+password : hrm 
+
+# Connect trec schema  using sql developer:
+-------------------------------------------
+username : trec
+password : trec 
+
+

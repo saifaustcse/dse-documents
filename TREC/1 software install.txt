@@ -1,0 +1,50 @@
+
+# JDK jdk-8u202-windows-x64
+- run as Admin
+
+# oracle sever
+- run as Admin
+- base (product)
+- file
+
+# sql developer
+
+# visual studio Code and C# v1.23.12
+# visual studio 2010
+# Service pack 1
+# Crystal report for VS2010
+
+# Crystal Reports for Server
+-- CRforVS_redist_install_32bit_13_0_2 (1st Install)
+-- CRforVS_13_0_2 (2nd Install)
+
+# oracle dot net provider
+-- 32 BIT (Unzipped Folder)
+
+
+# svn
+# DLL 
+  -- there might be some dll missing
+# AnkhSvn-2.5.12703
+# NuGet.Tools
+# SignalR
+# robocopy (file transfer from windows server to mounted drive)
+# Excel file reader software for windows server
+
+
+# App Server
+- Attendance Server 
+- Attendance Service Code
+- Attendance Service Data Migration Server
+- Email Domain Configuration
+- Email Verification Testing (Local PC/UAT/DEV)
+- File Auto-Copy/Backup using Robocopy (Refer to: https://petri.com/robocopy-complete-guide/)
+- SSL Certificate Configuration
+
+# DB Server
+- Automated Backup Script
+- Backup Transfer Script between Drives
+- Backup Restoration for Disaster Management / Debugging Live Issues in UAT/DEV/LOCAL
+- Menu Access Provision for Support
+- Access to PROD/UAT/DEV Database Servers
+- Access to PROD/UAR App Server

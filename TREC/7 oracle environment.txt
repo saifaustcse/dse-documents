@@ -1,0 +1,89 @@
+
+
+
+To use Oracle database and .NET provider on Windows:
+-- Install the Oracle database server, which will automatically set up the required paths.
+-- Install the Oracle .NET provider, which will also set up the necessary paths.
+-- If there's a conflict after installing both the Oracle database and .NET provider, remove the Oracle .NET provider path to resolve the ambiguity.
+
+-- If necessary, manually set the TNS_ADMIN environment variable in the Windows registry to point to the location of the tnsnames.ora file.
+ This is required for the Oracle client to connect to a remote database.
+
+
+
+Before installing dotnet provider
+----------------------------------
+-- ORACLE_HOME  not needed
+-- TNS_ADMIN not need
+-- path will automaically pointing the below location
+
+ > D:\installed_software\oracle11gR2DbServer\base\product\11.2.0\dbhome_1\bin
+
+
+After installing dotnet provider
+----------------------------------
+
+* path will be set bydefault for oracle server after installation
+* path will be set bydefault for oracleDontProvider after installation
+
+ > D:\installed_software\oracle11gR2DbServer\base\product\11.2.0\dbhome_1\bin
+ > D:\installed_software\oracle11gDotNetProvider32Bit\product\11.2.0\client_1
+ > D:\installed_software\oracle11gDotNetProvider32Bit\product\11.2.0\client_1\bin
+
+* Then ambuguti will be created so need to remove oracleDontProvider path
+* we need Remove oracle11gDotNetProvider32Bit related path
+* Only path will be bellow server path
+-- D:\installed_software\oracle11gR2DbServer\base\product\11.2.0\dbhome_1\bin
+
+
+ORACLE_HOME 
+------------
+-- ORACLE_HOME will oracle server home
+Variable Name: ORACLE_HOME 
+variable value: D:\installed_software\oracle11gR2DbServer\base\product\11.2.0\dbhome_1
+
+
+TNS_ADMIN 
+----------
+-- TNS_ADMIN will oracle11gDotNetProvider32Bit provider home
+Variable Name: TNS_ADMIN 
+variable value: D:\installed_software\oracle11gDotNetProvider32Bit\product\11.2.0\client_1\Network\Admin
+
+
+
+# Oracle environment in system and local variable:
+-------------------------------------------------
+https://stackoverflow.com/questions/7206129/cant-connect-to-oracle-from-a-windows-service-error-ora-12154-tnscould-not
+
+
+We need to set the ORACLE_HOME and TNS_ADMIN environment variables manually 
+since they are not set automatically during the installation of the Oracle software.
+
+ORACLE_HOME specifies the installation directory of the Oracle software and allows Oracle utilities 
+and applications to locate the necessary files and libraries for proper operation.
+
+TNS_ADMIN specifies the location of the tnsnames.ora file, which contains the network service name 
+and connection information for the Oracle database. By setting this variable,
+we can ensure that the Oracle utilities and applications can find and use the correct tnsnames.ora file to connect to the desired Oracle database.
+
+
+How to add the TNS_ADMIN to Windows registry
+---------------------------------------------
+https://groups.google.com/g/comp.databases.oracle.misc/c/eA1Gem8fqiY
+
+> To make a registry entry:
+>
+> 1. Click Start;
+> 2. Move to Run and click;
+> 3. Enter regedit as the program to run;
+> 4. Click OK;
+> 5. Click HKEY_LOCAL_MACHINE;
+> 6. Click SOFTWARE;
+> 7. Go to ORACLE (make sure you're in the main ORACLE branch);
+> 8. From the menu, select Edit->New->String Value;
+> 9. Name your new string value TNS_ADMIN;
+> 10.From the menu, select Edit->Modify, and enter d:\orant\network\admin
+> But ..... you shouldn't be in need of this parameter: assuming that your
+> Oracle home is d:\orant, the search path for network configuration files
+> defaults to d:\orant\network\admin when no TNS_ADMIN parameter exists
+> (assuming the configuration files are not in d:\orant\bin)

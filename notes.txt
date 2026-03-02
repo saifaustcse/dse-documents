@@ -25,6 +25,12 @@ Analogy
 # Super shop self --> keep most useable things in fort of customers eyses
 # Unnecessay Feature --> Sherwani instead of Shirt --> gmail
 
+Person's evaluation 
+---------------------
+- Behavior/Attitude
+- Technical Skills
+- Discipline
+- Ethics
 
 Tender  
 -------  
