@@ -1,0 +1,329 @@
+------------------------------------------------------
+
+DELETE from AUTH_REP;
+commit;
+
+SELECT constraint_name, table_name
+FROM user_constraints
+WHERE r_constraint_name IN (
+  SELECT constraint_name
+  FROM user_constraints
+  WHERE table_name = 'AUTH_REP'
+    AND constraint_type IN ('P', 'U')
+);
+
+delete from AUTH_REP_STATUS;
+delete from AUTH_REP_RENEW;
+delete from AUTH_REP;
+commit;
+
+
+------------------------------------------------------
+ AUTH_REP
+------------------------------------------------------
+
+CREATE TABLE AUTH_REP(
+    AUTH_REP_ID number(10) NOT NULL,
+    BACKUP_ID VARCHAR2(50 CHAR),
+    INHOUSE_AUTHID VARCHAR2(50 CHAR),           -- NEW
+    INHOUSE_AUTHNO VARCHAR2(50 CHAR),           -- NEW
+    TREC_ID NUMBER(5,0) NOT NULL,               -- PERSONNEL.TREC_ID
+    PERSONNEL_ID NUMBER(10,0) NOT NULL,         -- PERSONNEL.PERSONNEL_ID
+    DSE_APPROVED_DATE DATE,                     -- AUTH_REP_BACKUP.DSEAPVDATE 
+    BSEC_REG_NO VARCHAR2(50) NOT NULL,          -- AUTH_REP_BACKUP.SECREGNO 
+    BSEC_REG_ISSUANCE_DATE DATE,                -- AUTH_REP_BACKUP.REGDATE 
+    LICESE_TYPE VARCHAR2(50 CHAR),              -- “Original”, "Re-issued”, or “Duplicate”. 
+    LICESE_PATH VARCHAR2(255 CHAR),
+
+	REMARKS VARCHAR2(500 CHAR),
+    -- STATUS VARCHAR2(50 CHAR) NOT NULL,
+    ADDED_AT DATE DEFAULT sysdate NOT NULL,
+    ADDED_BY VARCHAR2(50) NOT NULL,
+    UPDATED_AT DATE,
+    UPDATED_BY VARCHAR2(50),
+	
+    constraint PK_AUTHREP primary key (AUTH_REP_ID),
+    constraint FK_AUTHREP_TREC foreign key (TREC_ID) references TREC(TREC_ID),
+    constraint FK_AUTHREP_PERSON foreign key (PERSONNEL_ID) references PERSONNEL(PERSONNEL_ID)
+);
+
+
+------------------------------------------------------
+ AUTH_REP_RENEW
+------------------------------------------------------
+
+CREATE TABLE AUTH_REP_RENEW(
+    AUTH_REP_RENEW_ID number(10) NOT NULL,
+    AUTH_REP_ID number(10) NOT NULL,
+    RENEW_DATE DATE,
+    EXPIRY_DATE DATE, 
+	REMARKS VARCHAR2(500 CHAR),
+
+    IS_ACTIVE number(1) DEFAULT (1) NOT NULL,
+    ADDED_AT DATE DEFAULT sysdate NOT NULL,
+    ADDED_BY VARCHAR2(50) NOT NULL,
+    UPDATED_AT DATE,
+    UPDATED_BY VARCHAR2(50),
+	
+    constraint PK_AUTH_REP_RENEW primary key (AUTH_REP_RENEW_ID),
+    constraint FK_AUTH_REP_RENEW_PERSON foreign key (AUTH_REP_ID) references AUTH_REP(AUTH_REP_ID)
+);
+
+------------------------------------------------------
+ AUTH_REP_STATUS
+------------------------------------------------------
+
+CREATE TABLE AUTH_REP_STATUS(
+    AUTH_REP_STATUS_ID NUMBER(10,0) NOT NULL,
+	AUTH_REP_ID number(10) NOT NULL,
+    STATUS VARCHAR2(50) NOT NULL,
+    EFFECTIVE_DATE DATE,
+    END_DATE DATE,
+	REMARKS VARCHAR2(255),		
+
+    IS_ACTIVE number(1) DEFAULT (1) NOT NULL,
+    ADDED_AT DATE DEFAULT sysdate NOT NULL,
+    ADDED_BY VARCHAR2(50) NOT NULL,
+    UPDATED_AT DATE,
+    UPDATED_BY VARCHAR2(50),
+    
+    CONSTRAINT PK_AUTH_REP_STATUS_ID PRIMARY KEY (AUTH_REP_STATUS_ID),
+    CONSTRAINT FK_AUTH_REP_STATUS_AR FOREIGN KEY (AUTH_REP_ID) REFERENCES AUTH_REP(AUTH_REP_ID)
+);
+
+------------------------------------------------------
+ CURRENT STATUS
+------------------------------------------------------
+SELECT *
+FROM (
+    SELECT
+      ROW_NUMBER() OVER (PARTITION BY AUTH_REP_ID ORDER BY EFFECTIVE_DATE DESC) AS rn,
+      AUTH_REP_STATUS_ID,
+      AUTH_REP_ID,
+      STATUS,
+      EFFECTIVE_DATE,
+      END_DATE,
+      REMARKS,
+      IS_ACTIVE,
+      ADDED_AT,
+      ADDED_BY,
+      UPDATED_AT,
+      UPDATED_BY
+    FROM AUTH_REP_STATUS
+    where AUTH_REP_ID=2
+) ranked
+WHERE rn = 1;
+
+------------------------------------------------------
+ VW_AUTH_REP
+------------------------------------------------------
+
+CREATE OR REPLACE FORCE VIEW "TREC_TREC"."VW_AUTH_REP" 
+("TREC_ID", "TREC_NO", "TREC_CODE", "TREC_NAME", 
+ "AUTH_REP_ID",  "INHOUSE_AUTHID",  "INHOUSE_AUTHNO",  "DSE_APPROVED_DATE", "BSEC_REG_NO", "BSEC_REG_ISSUANCE_DATE", "LICESE_TYPE", "LICESE_PATH", "REMARKS", "ADDED_AT", "ADDED_BY", 
+ "AUTH_REP_STATUS_ID", "STATUS", "STATUS_EFFECTIVE_DATE", "STATUS_END_DATE", "IS_ACTIVE",
+ "AUTH_REP_RENEW_ID", "RENEW_DATE", "EXPIRY_DATE",
+ "PERSONNEL_ID","PERSONNEL_NAME","DESIGNATION","SEX","NID","OFFICIAL_CONTACT_NO", "PERSONAL_CONTACT_NO", "OFFICIAL_EMAIL", "PERSONAL_EMAIL", "IMAGE_PATH", "SIGNATURE_PATH",
+ "TWS_NAME", 
+ "OFFICE_ID", "OFFICE_TYPE", "OFFICE_STATUS", "OFFICE_NO", "OFFICE_NAME", "LOCATION", "AREA", "THANA", "EUNION", "DISTRICT", "DIVISION"
+ ) AS 
+
+SELECT
+    t.TREC_ID,
+    t.TREC_NO,
+    t.CODE as TREC_CODE,
+    t.NAME as TREC_NAME,
+
+    ar.AUTH_REP_ID,
+    ar.INHOUSE_AUTHID,
+    ar.INHOUSE_AUTHNO,
+    ar.DSE_APPROVED_DATE,
+    ar.BSEC_REG_NO,
+    ar.BSEC_REG_ISSUANCE_DATE,
+    ar.LICESE_TYPE,
+    ar.LICESE_PATH,
+    ar.REMARKS,
+    ar.ADDED_AT,
+    ar.ADDED_BY,
+
+    st.AUTH_REP_STATUS_ID,
+    st.STATUS,
+    st.EFFECTIVE_DATE as STATUS_EFFECTIVE_DATE,
+    st.END_DATE as STATUS_END_DATE,
+    CASE WHEN st.STATUS IN ('ACTIVE', 'RESUMED', 'INACTIVE') THEN 1 ELSE 0 END AS IS_ACTIVE,
+    rn.AUTH_REP_RENEW_ID,
+    rn.RENEW_DATE,
+    rn.EXPIRY_DATE,
+
+    pi.PERSONNEL_ID,
+    pi.NAME as PERSONNEL_NAME,
+    pi.DESIGNATION,
+    pi.SEX,
+    pi.NID,
+    pi.OFFICIAL_CONTACT_NO,
+    pi.PERSONAL_CONTACT_NO,
+    pi.OFFICIAL_EMAIL,
+    pi.PERSONAL_EMAIL,
+    pi.IMAGE_PATH,
+    pi.SIGNATURE_PATH,
+
+    w.TWS_NAME,
+    o.OFFICE_ID,
+    ot.TYPE as OFFICE_TYPE,
+    ost.STATUS as OFFICE_STATUS,
+    o.OFFICE_NO,
+    o.OFFICE_NAME,
+    oa.LOCATION,
+    oa.AREA,
+    oa.THANA,
+    oa.EUNION,
+    oa.DISTRICT,
+    oa.DIVISION
+    
+FROM  AUTH_REP ar
+INNER JOIN AUTH_REP_STATUS st ON ar.AUTH_REP_ID = st.AUTH_REP_ID and st.IS_ACTIVE=1
+INNER JOIN AUTH_REP_RENEW rn ON ar.AUTH_REP_ID = rn.AUTH_REP_ID and rn.IS_ACTIVE=1
+INNER JOIN TREC t ON ar.TREC_ID = t.TREC_ID
+INNER JOIN PERSONNEL pi ON ar.PERSONNEL_ID = pi.PERSONNEL_ID 
+LEFT JOIN WORKSTATION_AUTH_REP war on pi.PERSONNEL_ID = war.PERSONNEL_ID AND war.IS_ACTIVE=1
+LEFT JOIN WORKSTATION w on war.WORKSTATION_ID = w.WORKSTATION_ID
+LEFT JOIN WORKSTATION_OFFICE wo ON w.WORKSTATION_ID = wo.WORKSTATION_ID AND wo.IS_ACTIVE=1
+LEFT JOIN OFFICE o ON wo.OFFICE_ID = o.OFFICE_ID 
+LEFT JOIN OFFICE_TYPE ot on o.OFFICE_ID = ot.OFFICE_ID AND ot.IS_ACTIVE = 1
+LEFT JOIN OFFICE_STATUS ost ON o.OFFICE_ID = ost.OFFICE_ID AND ost.IS_ACTIVE = 1
+LEFT JOIN OFFICE_ADDRESS oa ON o.OFFICE_ID = oa.OFFICE_ID AND oa.IS_ACTIVE = 1
+ORDER BY ar.AUTH_REP_ID;
+    
+select * from VW_AUTH_REP;
+
+------------------------------------------------------
+ VW_AUTH_REP_STATUS
+------------------------------------------------------
+
+CREATE OR REPLACE FORCE VIEW "TREC_TREC"."VW_AUTH_REP_STATUS" 
+("TREC_ID", "TREC_NO", "TREC_CODE", "TREC_NAME", 
+ "AUTH_REP_ID",  "INHOUSE_AUTHID",  "INHOUSE_AUTHNO",  "DSE_APPROVED_DATE", "BSEC_REG_NO", "BSEC_REG_ISSUANCE_DATE", "LICESE_TYPE", "LICESE_PATH", 
+ "AUTH_REP_STATUS_ID", "STATUS", "STATUS_EFFECTIVE_DATE", "STATUS_END_DATE", "REMARKS", "IS_ACTIVE", "ADDED_AT" ,  "ADDED_BY",
+ "AUTH_REP_RENEW_ID", "RENEW_DATE", "EXPIRY_DATE",
+ "PERSONNEL_ID","PERSONNEL_NAME","DESIGNATION","SEX","NID","OFFICIAL_CONTACT_NO", "PERSONAL_CONTACT_NO", "OFFICIAL_EMAIL", "PERSONAL_EMAIL"
+ ) AS 
+ 
+SELECT
+    t.TREC_ID,
+    t.TREC_NO,
+    t.CODE as TREC_CODE,
+    t.NAME as TREC_NAME,
+
+    ar.AUTH_REP_ID,
+    ar.INHOUSE_AUTHID,
+    ar.INHOUSE_AUTHNO,
+    ar.DSE_APPROVED_DATE,
+    ar.BSEC_REG_NO,
+    ar.BSEC_REG_ISSUANCE_DATE,
+    ar.LICESE_TYPE,
+    ar.LICESE_PATH,
+
+    st.AUTH_REP_STATUS_ID,
+    st.STATUS,
+    st.EFFECTIVE_DATE as STATUS_EFFECTIVE_DATE,
+    st.END_DATE as STATUS_END_DATE,
+    st.REMARKS,
+    st.IS_ACTIVE,
+    st.ADDED_AT,
+    st.ADDED_BY,
+    
+    rn.AUTH_REP_RENEW_ID,
+    rn.RENEW_DATE,
+    rn.EXPIRY_DATE,
+
+    pi.PERSONNEL_ID,
+    pi.NAME as PERSONNEL_NAME,
+    pi.DESIGNATION,
+    pi.SEX,
+    pi.NID,
+    pi.OFFICIAL_CONTACT_NO,
+    pi.PERSONAL_CONTACT_NO,
+    pi.OFFICIAL_EMAIL,
+    pi.PERSONAL_EMAIL
+    
+FROM  AUTH_REP ar
+INNER JOIN AUTH_REP_STATUS st ON ar.AUTH_REP_ID = st.AUTH_REP_ID 
+INNER JOIN AUTH_REP_RENEW rn ON ar.AUTH_REP_ID = rn.AUTH_REP_ID and rn.IS_ACTIVE=1
+INNER JOIN TREC t ON ar.TREC_ID = t.TREC_ID
+INNER JOIN PERSONNEL pi ON pi.PERSONNEL_ID = ar.PERSONNEL_ID
+ORDER BY ar.AUTH_REP_ID;
+
+
+select * from VW_AUTH_REP_STATUS;
+select count (AUTH_REP_ID) from AUTH_REP; -- 12476
+select count (AUTH_REP_ID) from AUTH_REP_STATUS_HIST; -- 9
+select count(*) from VW_AUTH_REP_STATUS; -- 12485
+select * from VW_AUTH_REP_STATUS where AUTH_REP_ID=7;
+
+select count (*), status from VW_AUTH_REP_STATUS  group by status;
+select count (*),  status from VW_AUTH_REP_STATUS where EFFECTIVE_DATE >= '01-JAN-2022'  group by status;
+select count (*) from VW_AUTH_REP_STATUS where status ='SUSPENDED' and EFFECTIVE_DATE >= '01-JAN-2022';
+select * from VW_AUTH_REP_STATUS where status ='ACTIVE' and EFFECTIVE_DATE >= '01-JAN-2022';
+
+
+------------------------------------------------------
+ VW_AUTH_REP_RENEW
+------------------------------------------------------
+
+CREATE OR REPLACE FORCE VIEW "TREC_TREC"."VW_AUTH_REP_RENEW" 
+("TREC_ID", "TREC_NO", "TREC_CODE", "TREC_NAME", 
+ "AUTH_REP_ID",  "INHOUSE_AUTHID",  "INHOUSE_AUTHNO",  "DSE_APPROVED_DATE", "BSEC_REG_NO", "BSEC_REG_ISSUANCE_DATE", "LICESE_TYPE", "LICESE_PATH",
+ "AUTH_REP_STATUS_ID", "STATUS", "STATUS_EFFECTIVE_DATE", "STATUS_END_DATE", 
+ "AUTH_REP_RENEW_ID", "RENEW_DATE", "EXPIRY_DATE", "IS_ACTIVE", "REMARKS", "ADDED_AT", "ADDED_BY", 
+ "PERSONNEL_ID","PERSONNEL_NAME","DESIGNATION","SEX","NID","OFFICIAL_CONTACT_NO", "PERSONAL_CONTACT_NO", "OFFICIAL_EMAIL", "PERSONAL_EMAIL"
+ ) AS 
+ 
+SELECT
+    t.TREC_ID,
+    t.TREC_NO,
+    t.CODE as TREC_CODE,
+    t.NAME as TREC_NAME,
+
+    ar.AUTH_REP_ID,
+    ar.INHOUSE_AUTHID,
+    ar.INHOUSE_AUTHNO,
+    ar.DSE_APPROVED_DATE,
+    ar.BSEC_REG_NO,
+    ar.BSEC_REG_ISSUANCE_DATE,
+    ar.LICESE_TYPE,
+    ar.LICESE_PATH,
+
+    st.AUTH_REP_STATUS_ID,
+    st.STATUS,
+    st.EFFECTIVE_DATE as STATUS_EFFECTIVE_DATE,
+    st.END_DATE as STATUS_END_DATE,
+    
+    rn.AUTH_REP_RENEW_ID,
+    rn.RENEW_DATE,
+    rn.EXPIRY_DATE,
+    rn.IS_ACTIVE,
+    rn.REMARKS,
+    rn.ADDED_AT,
+    rn.ADDED_BY,
+
+    pi.PERSONNEL_ID,
+    pi.NAME as PERSONNEL_NAME,
+    pi.DESIGNATION,
+    pi.SEX,
+    pi.NID,
+    pi.OFFICIAL_CONTACT_NO,
+    pi.PERSONAL_CONTACT_NO,
+    pi.OFFICIAL_EMAIL,
+    pi.PERSONAL_EMAIL
+    
+FROM  AUTH_REP ar
+INNER JOIN AUTH_REP_RENEW rn ON ar.AUTH_REP_ID = rn.AUTH_REP_ID 
+INNER JOIN AUTH_REP_STATUS st ON ar.AUTH_REP_ID = st.AUTH_REP_ID and st.IS_ACTIVE=1
+INNER JOIN TREC t ON ar.TREC_ID = t.TREC_ID
+INNER JOIN PERSONNEL pi ON pi.PERSONNEL_ID = ar.PERSONNEL_ID
+ORDER BY ar.AUTH_REP_ID;
+
+select * from VW_AUTH_REP_RENEW;
+------------------------------------------------------
+
+

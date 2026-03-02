@@ -1,0 +1,29 @@
+User Parameters wise login
+Sysparam Config
+User lock
+Footer
+
+User Category
+------------
+List 
+add 
+edit
+
+role
+----
+duplicate check
+role inactive validation with role-menus
+cross check while logging for inactive roles
+
+
+menu
+----
+duplicate check
+menu inactive validation with role-menus
+cross check while logging for inactive menus
+
+System Parameters
+--------------------
+duplicate check
+menu inactive validation with role-menus
+cross check while logging for inactive System Parameters

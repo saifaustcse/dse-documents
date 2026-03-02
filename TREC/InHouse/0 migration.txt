@@ -1,0 +1,56 @@
+> Restore database in Administative Mode
+> Open MSSQL in Administative Mode
+> SQL query
+> Copy with header and Paste to Excel
+> Import Data in Oracle Table Using Insert Script
+> Check the Numners of row
+
+Steps:
+------
+1. Backup from live
+2. Restore in local
+    
+update TBLUSERINFO set  PASSWORD_CHANGE_DATE='30-OCT-22';
+update TBLUSERINFO set  USERPASSWORD='MQ==';
+
+select  * from user_profile where  EMAIL not like '%saiful.islam%' or EMAIL not like '%tanzin.kabir%';
+update user_profile set EMAIL = 'nomail@dse.com.bd'  where  EMAIL not like '%saiful.islam%' or EMAIL not like '%tanzin.kabir%';
+
+-- commit;
+
+3. Compare with Test dsesms
+  -- match the schemas
+
+4. Compare with Test hrm
+  -- match the schemas
+
+5. Compare with Test trec
+  -- match the schemas
+
+6. Run project
+
+7. Add Menu and Roles
+
+9. Create local space and New user 
+
+10. Migrate schema new user
+
+11. Migrate data to new user
+  -- mainlist_migration
+  -- memreg_migration
+  -- branch_migration 
+  -- authrep Migrate 
+  -- traderid_migration
+
+12. Change web config
+
+13. Deploy project with changed
+
+14. Migrate data from inhouse
+
+
+
+
+
+
+

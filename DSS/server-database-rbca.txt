@@ -1,0 +1,208 @@
+**************************************************************
+                      PRODUCTION DB
+**************************************************************
+
+Connect Database using sql developer
+------------------------------------
+connection type : Basic
+role : default
+hostname : 10.228.2.139
+port: 1521
+sid : DSEERPDB
+
+username : dsesms
+password : 
+
+username : hrm
+password : 
+
+username : trec
+password : 
+
+
+DSESMS_PROD =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 10.218.2.139)(PORT = 1521))
+    )
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = DSEERPDB)
+    )
+  )
+
+Connect to the Red Hat server using SSH (Secure Shell) or SFTP (SSH File Transfer Protocol)
+--------------------------------------------------------------------------------------------
+Host Name: 10.228.2.139
+user : root
+port : 22
+pass : o)3D.xj/0O
+
+Use SSH (Secure Shell) for running database commands
+----------------------------------------------------
+> su -oracle
+> expdp \"sys\SYS123 as sysdba\" directory = dmp_dir schemas = dsesms, hrm, trec dumpfile = dsesms_hrm_trec_16_Mar_2022.dmp
+> SYS123
+
+SQL> conn sys as sysdba
+Enter password: SYS123
+
+> su -oracle
+SQL> conn system
+Enter password: manager123
+
+alter user system identified by NewPassword;
+ALTER USER SYS IDENTIFIED BY newpassword;
+ALTER USER system IDENTIFIED BY password ACCOUNT UNLOCK;
+
+select * from dba_data_files;
+select * from dba_directories;
+SELECT * FROM dba_users where ACCOUNT_STATUS='OPEN';
+
+
+Use SFTP (SSH File Transfer Protocol) for transferring database backups
+-----------------------------------------------------------------------
+Oracle path = /u01/app/oracle/product/11.2.0/dbhome_1/network/admin
+Manual backup path = /var/opt/dmp_dump_dir
+Auto backup path =/data_backup/dump_backup/dmp_dump_dir
+
+
+**************************************************************
+                      UAT DB
+**************************************************************
+
+Connect Database using sql developer
+------------------------------------
+connection type : Basic
+role : default
+hostname : 10.218.2.143
+port: 1522
+sid : dseces 
+
+username : dsesms
+password : dsesms
+
+username : hrm
+password : hrm
+
+username : trec
+password : trec
+
+
+DSESMS_UAT_BACKUP =
+  (DESCRIPTION =
+    (ADDRESS_LIST =
+      (ADDRESS = (PROTOCOL = TCP)(HOST = 10.218.2.143)(PORT = 1522))
+    )
+    (CONNECT_DATA =
+      (SERVER = DEDICATED)
+      (SERVICE_NAME = DSECES)
+    )
+  )
+
+Connect to the Red Hat server using SSH (Secure Shell) or SFTP (SSH File Transfer Protocol)
+--------------------------------------------------------------------------------------------
+10.218.2.143
+user : root
+port : 22
+pass : o)3D.xj/0O
+
+Use SSH (Secure Shell) for running database commands
+----------------------------------------------------
+> su -oracle
+> expdp \"sys/sys123 as sysdba\" directory = dmp_dir schemas = dsesms, hrm, trec dumpfile = dsesms_hrm_trec_16_Mar_2022.dmp
+> sys123
+
+> su -oracle
+SQL> conn sys as sysdba
+Enter password: sys123
+
+su -oracle
+SQL> conn system
+Enter password: SYSTEM123
+
+alter user system identified by NewPassword;
+ALTER USER SYS IDENTIFIED BY newpassword;
+ALTER USER system IDENTIFIED BY password ACCOUNT UNLOCK;
+
+select * from dba_data_files;
+select * from dba_directories;
+SELECT * FROM dba_users where ACCOUNT_STATUS='OPEN';
+
+
+After  Login Using SSH Secure File transfer
+---------------------------------------------
+Oracle path = /u01/app/oracle/product/11.2.0/dbhome_1/network/admin
+Manual backup path = /opt/dmp_dump_dir
+
+
+**************************************************************
+                      DEVELOPMENT DB
+**************************************************************
+
+Connect Database using sql developer
+------------------------------------
+connection type : Basic
+role : default
+hostname : 
+port: 
+sid :  
+
+username : hrm
+password : hrm
+
+username : dsesms
+password : dsesms
+
+username : trec
+password : trec
+
+
+Connect to the Red Hat server using SSH (Secure Shell) or SFTP (SSH File Transfer Protocol)
+--------------------------------------------------------------------------------------------
+10.228.2.136 
+user : root
+port : 22
+pass : abc
+
+Use SSH (Secure Shell) for running database commands
+----------------------------------------------------
+> su -oracle
+> expdp \"sys/sys123 as sysdba\" directory = dmp_dir schemas = dsesms, hrm, trec dumpfile = dsesms_hrm_trec_16_Mar_2022.dmp
+> sys123
+
+SQL> conn sys as sysdba
+Enter password: sys123
+
+> su -oracle
+SQL> conn system
+Enter password: SYSTEM123
+
+alter user system identified by NewPassword;
+ALTER USER SYS IDENTIFIED BY newpassword;
+ALTER USER system IDENTIFIED BY password ACCOUNT UNLOCK;
+
+select * from dba_data_files;
+select * from dba_directories;
+SELECT * FROM dba_users where ACCOUNT_STATUS='OPEN';
+
+
+Use SFTP (SSH File Transfer Protocol) for transferring database backups
+-----------------------------------------------------------------------
+Manual backup path = /opt/dmp_dump_dir
+
+
+****************************************
+               Check List
+****************************************
+| Project  | Local | Dev |  UAT | Prod |
+----------------------------------------
+| dsesms   | Yes   | Yes |  Yes | Yes  |
+| hrm      | Yes   | Yes |  Yes | Yes  |
+| trec     | Yes   | Yes |  Yes | Yes  |
+| menu     | Yes   | Yes |  Yes | Yes  |
+| deploy   | Yes   | Yes |  Yes | Yes  |
+| 496-11   | Yes   | Yes |  Yes | Yes  |
+| 111-1    | Yes   | Yes |  Yes | Yes  |
+----------------------------------------
+

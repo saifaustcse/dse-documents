@@ -1,0 +1,88 @@
+
+
+ select * from PERSONNEL_INFO
+-- drop table TREC_PERSONNEL_INFO;
+-- drop table PERSONNEL_INFO_OFFICE cascade constraints;
+
+
+ALTER TABLE PERSONNEL_INFO ADD IS_ACTIVE number(1) DEFAULT (1) NOT NULL;
+ALTER TABLE PERSONNEL_INFO ADD IS_DELETED number(1) DEFAULT (0) NOT NULL;
+
+
+------------------------NEW------------------------------
+
+DELETE from PERSONNEL_OFFICE ; 
+DELETE from PERSONNEL_OFFICE_ADD ; 
+DELETE from PERSONNEL_OFFICE_REMOVE ; 
+
+commit;
+
+------------------------------------------------------
+ PERSONNEL_OFFICE_ADD
+------------------------------------------------------
+
+CREATE TABLE PERSONNEL_OFFICE_ADD(
+    PERSONNEL_OFFICE_ADD_ID number(10) NOT NULL,
+    PERSONNEL_INFO_ID number(10) NOT NULL,
+    NEW_OFFICE_ID NUMBER(5,0) NOT NULL,
+	FIRST_DAY_AT_OFFICE DATE NOT NULL ENABLE, 
+    REMARKS VARCHAR2(255),
+    STATUS varchar2(40),
+    CREATED_BY varchar2(200) NOT NULL,
+    UPDATED_BY varchar2(200),
+	APPROVED_BY varchar2(200),
+    CREATED_DATE date NOT NULL,
+	UPDATED_DATE date,
+	APPROVED_DATE DATE,
+    IS_ACTIVE number(1) DEFAULT (1) NOT NULL,
+    IS_DELETED number(1) DEFAULT (0) NOT NULL,
+    constraint PK_PERSONNEL_OFFICE_ADD primary key (PERSONNEL_OFFICE_ADD_ID),
+    constraint FK_PERSONNEL_OFFICE_ADD_PERSON foreign key (PERSONNEL_INFO_ID) references PERSONNEL_INFO(PERSONNEL_INFO_ID),
+    constraint FK_PERSONNEL_OFFICE_ADD_OFFICE foreign key (NEW_OFFICE_ID) references OFFICE(OFFICE_ID)
+);
+
+------------------------------------------------------
+ PERSONNEL_OFFICE_REMOVE
+------------------------------------------------------
+CREATE TABLE PERSONNEL_OFFICE_REMOVE(
+    PERSONNEL_OFFICE_RMV_ID number(10) NOT NULL,
+    PERSONNEL_INFO_ID number(10) NOT NULL,
+	OFFICE_ID NUMBER(5,0) NOT NULL,
+	LAST_DAY_AT_OFFICE DATE NOT NULL ENABLE, 
+    REMARKS VARCHAR2(255),
+    STATUS varchar2(40),
+    CREATED_BY varchar2(200) NOT NULL,
+    UPDATED_BY varchar2(200),
+	APPROVED_BY varchar2(200),
+    CREATED_DATE date NOT NULL,
+	UPDATED_DATE date,
+	APPROVED_DATE DATE,
+    IS_ACTIVE number(1) DEFAULT (1) NOT NULL,
+    IS_DELETED number(1) DEFAULT (0) NOT NULL,
+    constraint PK_PERSONNEL_OFFICE_RMV primary key (PERSONNEL_OFFICE_RMV_ID),
+    constraint FK_PERSONNEL_OFFICE_RMV_PERSON foreign key (PERSONNEL_INFO_ID) references PERSONNEL_INFO(PERSONNEL_INFO_ID),
+	constraint FK_PERSONNEL_OFFICE_RMV_OFFICE foreign key (OFFICE_ID) references OFFICE(OFFICE_ID)
+);
+
+
+------------------------------------------------------
+ PERSONNEL_EMP_END_APP
+------------------------------------------------------
+
+CREATE TABLE PERSONNEL_EMP_END_APP(
+    PERSONNEL_EMP_END_APP_ID number(10) NOT NULL,
+    PERSONNEL_INFO_ID number(10) NOT NULL,
+    LAST_DATE_OF_EMPLOYMENT DATE,
+    REMARKS VARCHAR2(255),
+    STATUS VARCHAR2(40),
+    CREATED_BY varchar2(200),
+    UPDATED_BY varchar2(200),
+    SENT_BY varchar2(200),
+    CREATED_DATE DATE,
+    UPDATED_DATE DATE,
+    SUBMISSION_DATE DATE,
+	IS_ACTIVE number(1) DEFAULT (1) NOT NULL,
+    IS_DELETED number(1) DEFAULT (0) NOT NULL,
+    constraint PK_PERSONNEL_EMP_END primary key (PERSONNEL_EMP_END_APP_ID),
+    constraint FK_PERSONNEL_EMP_END_PERSON foreign key (PERSONNEL_INFO_ID) references PERSONNEL_INFO(PERSONNEL_INFO_ID),
+);

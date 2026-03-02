@@ -1,0 +1,47 @@
+Check version of Oracle
+-------------------------
+
+select banner from v$version;
+select banner from v$version where rownum=1;
+
+SELECT * FROM PRODUCT_COMPONENT_VERSION;
+select version from PRODUCT_COMPONENT_VERSION where rownum = 1;
+
+
+
+Step 1:  Create a directory at OS level
+----------------------------------------
+OS level directory called physical directory
+
+> $mkdir /u01/EXPORT_BKP/
+
+select * from dba_directories;
+
+
+Step 2:  Create directory at the Database level 
+-------------------------------------------------
+Database level directory called logical directory. 
+Note: This directory will not visible unless OS level directory not create
+
+$sqlplus / as sysdba
+SQL> create directory EXP_DUMP as '/u01/EXPORT_BKP/ ';
+
+
+Step 3:  Check directory information at the Database level
+----------------------------------------------------------
+select * from dba_directories;
+select * from dba_data_files;
+SELECT * FROM dba_users where ACCOUNT_STATUS='OPEN';
+
+
+Step 3:  Check directory information at the Database level
+----------------------------------------------------------
+select * from dba_directories;
+select * from dba_data_files;
+SELECT * FROM dba_users where ACCOUNT_STATUS='OPEN';
+
+
+
+
+
+

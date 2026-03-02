@@ -1,0 +1,78 @@
+# Card : EIN-496
+# Card access
+
+# Email:
+---------
+URL:  https://mail.dse.com.bd
+user: saiful.islam496@dse.com.bd
+pass: Dse!!$$$##
+
+
+# Desktop:
+-----------
+User: saiful.islam496
+Role: Regular User
+pass: same as email
+
+User: saiful.bo
+Role: Admin User
+pass: same as email
+
+Computer Name: DSE00402D10496
+Full Computer Name: DSE00402D10496.dse.com.bd
+Domain : dse.com.bd
+
+IPv4 Address. . . . . . . . . . . : 172.31.62.20
+Subnet Mask . . . . . . . . . . . : 255.255.248.0
+Default Gateway . . . . . . . . . : 172.31.62.1
+
+ERP Live access:
+-----------------
+https://drp.dse.com.bd:9500/default.aspx
+https://ces.dse.com.bd:9000/default.aspx
+user: 496
+pass: 
+
+# File Servers:
+---------------
+run>
+\\10.218.1.16
+\\10.218.1.64
+
+# Zoom:
+-------
+URL:  https://mail.dse.com.bd
+user: saiful.islam496@dse.com.bd
+pass: Dse**$$$##
+
+
+# Skype:
+--------
+user: saiful.islam496@dse.com.bd
+pass: Dse*$$$#
+
+
+# Oracle registration:
+---------------------
+user: saiful.islam496@dse.com.bd
+pass: Dse*$$$#
+
+
+# SVN:
+------
+https://10.218.1.44/svn/SMS/trunk/SMS
+https://10.218.1.44/svn/TREC/trunk
+https://10.218.1.44/svn/GSS/trunk
+https://10.218.1.44/svn/GSS_Live/trunk
+
+user ID: saiful
+pwd: dse@123
+
+
+#. internet domain
+#. internet wifi
+#. laptop
+#. insurance
+#. transport
+#. phone
+#. head phone

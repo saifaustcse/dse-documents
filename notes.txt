@@ -1,0 +1,85 @@
+
+DSS: Digital Solution For Stakeholders
+-----------------------------------------------------
+Common Module --> User Management, Authentication, and Role-based Authorization for DSE employee, TREC, BSEC
+Module1 --> RBCA: Risk-Based Capital Adequacy 
+Module2 --> CCA : Consolidated Customer Accounts
+Module3 --> MCD: Monitoring and Compliance Department
+
+RBCA Quarter
+------------
+Jan Feb March --> April 15
+April May June --> July 15
+July Aug Sep --> Oct 15
+Jan Nov Dec --> Jan 15
+
+
+Analogy
+------
+# Cycle/Swimming vs Book --> Programming
+# Eid Salat / Janaza  -- > Configuration
+# A room for outsider in my house -- > ERP
+# Great tool Trademill --> I cannot use
+# Lift Miror --> Keep user interested
+# Home Miror --> self relization or self judgement
+# Super shop self --> keep most useable things in fort of customers eyses
+# Unnecessay Feature --> Sherwani instead of Shirt --> gmail
+
+
+Tender  
+-------  
+- Bidder  
+- Tender submission  
+- Tender document  
+- Bid evaluation  
+- Procurement  
+- Expression of Interest (EOI)  
+- Invitation to Tender (ITT)  
+- Submission deadline  
+- Terms and Conditions (T&C)  
+
+SOR  = Standard Operating Procedures
+BRS = Business Requirement Specification
+SRS  = Software  Requirement Specification
+
+RFP = Request for proposal
+TOR = Terms of Reference
+PO  = Pay Order
+AMC = Annual Maintenance Contract
+
+Purchase Agreement
+Installation and Commissioning Contract
+Warranty Agreement
+Initial Support Agreement
+Technical Evalution
+Complied
+Responsive
+
+Vocabulary
+-------------
+orchestra = সমবেত বাদকদল 
+orchestration = সুসংবদ্ধভাবে সমন্বিত করা
+tenure = মেয়াদ
+meeting = সভা = বৈঠক
+meeting minutes = সভার কার্যবিবরণী = সভার বিবরণ = সভার সারাংশ
+annexure = সংযোজন
+dissemination = প্রচার
+dimutialization = দ্বিমুখীকরণ
+surveillance = নজরদারি
+delusion = illusion = বিভ্রম = বিভ্রান্তি
+hallucination = অলীক কিছুর অস্তিতে বিশ্বাস
+deficit = ঘাটতি
+surplus = প্রয়োজনাতিরিক্ত
+piracy = নকল = দস্যুতা (জলদস্যুতা) 
+conspiracy = চক্রান্ত = ষড়্যন্ত্র
+loophole = ফাঁকফোকর
+deficiency = অভাব
+bureaucracy = আমলাতন্ত্র
+injustice = অবিচার 
+responsible = দায়িত্বশীল
+disruption =  ব্যাঘাত
+provision = ব্যবস্থা = বন্দোবস্ত
+
+
+
+

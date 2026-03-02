@@ -1,0 +1,147 @@
+
+**************************************************************
+                      ERP WEB SERVER
+**************************************************************
+
+ERP PROD APP Server DMZ (Only from outside of the office network)
+-----------------------------------------------------------------
+Remote Desktop
+Server Name : DSE-ERP-Web-Prod-DMZ
+IP : 10.218.50.45
+Domain User : dse\saiful.islam496
+Domain pass : DomainPass
+
+ERP Link Live: https://drp.dse.com.bd:9500/default.aspx
+Username: 496
+Password:
+
+
+ERP PROD APP Server Local
+--------------------------
+Remote Desktop
+Server Name : DSE-ERP-Web-Prod
+IP : 10.218.1.45
+Admin User : mis.admin
+Admin User : .\mis.admin
+Pass : M$s@12345
+
+
+ERP Link Live: https://ces.dse.com.bd:9000/default.aspx
+Username: 496
+Password:
+
+
+TMS & ERP UAT APP Server
+------------------------
+Remote Desktop
+Server Name : DSE-ERP-Web-UAT
+IP : 10.218.50.36
+Domain User : dse\saiful.islam496
+Domain pass : DomainPass
+Admin User : mis.admin
+Admin User : .\mis.admin
+Pass : M$s@12345
+
+
+ERP Link UAT : http://erpuat:9000/default.aspx
+TMS Link UAT : http://erpuat:9300/default.aspx
+Username: 496
+Password: 11
+Username: 111
+Password: 1
+
+TMS & ERP DEV APP Server
+------------------------
+Remote Desktop
+Server Name : DSE-ERP-Web-Dev
+IP : 10.218.50.39
+Domain User : dse\saiful.islam496  
+Domain pass : DomainPass
+Admin User : 
+Admin User :
+
+ERP Link Live :
+TMS Link Live : 
+
+
+**************************************************************
+                      TMS SERVER
+**************************************************************
+
+TMS PROD APP Server Local
+--------------------------
+Remote Desktop
+Server Name : 
+IP : 10.218.50.49
+Domain User : dse\saiful.islam496
+Domain pass : DomainPass
+Admin User : .\trec.admin
+Pass : TR$C@12345
+
+TMS Link LIVE : https://trec.dse.com.bd:9200/default.aspx
+Username: 496
+Password:
+Username: 111
+Password: 1
+
+**************************************************************
+               AIT & AppSupport APP Server 
+**************************************************************
+
+Remote Desktop
+Server Name : 
+IP : 10.218.1.17
+Admin User : mis.admin
+Admin User : .\mis.admin
+Pass : M$s@12345
+
+AIT Link LIVE: https://10.218.1.17:8020
+AppSupport Link LIVE : http://10.218.1.17:9000
+User : gk
+Pass : a
+
+**************************************************************
+                AIT & AppSupport DB Server
+**************************************************************
+
+Remote Desktop
+Server Name : 
+IP : 10.218.2.17
+Admin User : mis.admin
+Admin User : .\mis.admin
+Pass : M$s@12345
+
+SQL Database: 
+------------
+User ID = sa;
+Password = Note@1234;
+
+AppSupport Database = AppSupport;
+AIT Database = SurvListedCompany;
+
+AutoBackup Configuration Using SQL Server Maintenance Plans (GUI)
+------------------------------------------------------------------
+- Open SQL Server Management Studio (SSMS).
+- Go to Management → Maintenance Plans
+- Create a new Maintenance Plan Wizard
+- Select Back Up Database (Full, Differential, or Transaction Log) as a task
+- Configure the schedule (daily, weekly, or hourly)
+- Specify the backup destination (local disk or network share)
+- Save the plan 
+- SQL Server Agent will automatically create and run the job
+
+Path : D:\DatabaseAutoBackup
+
+************************************************
+            MIS Other Projects
+************************************************
+
+ESS Live   : https://www.essbangladesh.com/
+ESS UAT    : https://10.218.1.39:8443/
+JOB portal : https://career.dse.com.bd:8443/
+CNS Live   : http://10.138.164.11:8001/cns/
+CIM UAT    : http://120.50.22.50:8180/CIM-WEB/
+
+
+
+

@@ -1,0 +1,11 @@
+
+Registered Entities :
+----------------------
+SL. Category                           Total   User Account Created   Information Not Received
+1.  Merchant Banker and Portfolio     68      63                       05
+2.  Asset Manager                     60      35                       25
+3.  Fund Manager                      26      11                       15
+4.  Trustee                           28      04                       24
+5.  Custodian                         09      04                       05
+6.  Securities Custodian              15      09                       06
+7.  Credit Rating Company             08      07                       01

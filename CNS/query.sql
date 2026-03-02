@@ -1,0 +1,74 @@
+
+-- BOID exists in cns from 10 Jun 2012
+
+-- Client code exists 28 February 2007
+
+-- Data exists in cns from 13-APR-06
+
+-- Foreign Client exist from 11 Dec 2014
+
+--------------------------------------- INSTRUMENT ----------------------------------------------------
+
+select * from INSTRUMENT order by ISSUESHARE desc;
+select * from INSTRUMENT order by BASEUNITPRICE desc;
+select * from INSTRUMENT order by LTDATE desc;
+select * from INSTRUMENT order by STARTDATE desc;
+select * from INSTRUMENT order by DEMATDATE desc;
+select count(*), ISDEMATTED from INSTRUMENT GROUP by ISDEMATTED;
+
+
+select count(*), STATUS from INSTRUMENT GROUP by STATUS; -- 695	1 116	2 31	4
+select count(*), GROUPCODE from INSTRUMENT GROUP by GROUPCODE; -- 287	null 39	B 411	A 104	Z 1	G
+select count(*), BOARD_TYPE from INSTRUMENT GROUP by BOARD_TYPE; -- 823	M 2	A 17	S
+select count(*), SETTLEMENTTYPE from INSTRUMENT GROUP by SETTLEMENTTYPE; -- 546	null 145	T 151	N
+desc INSTRUMENT;
+
+--------------------------------------- TRADECLOSEPRICE ----------------------------------------------------
+
+SELECT MIN(TRADEDATE) AS MIN_DATE FROM TRADECLOSEPRICE; -- 11-JUN-06
+SELECT MAX(TRADEDATE) AS MAX_DATE FROM TRADECLOSEPRICE; -- 22-OCT-23
+select count(*) from TRADECLOSEPRICE where TRADEDATE  = '22-OCT-23'; -- 671
+select * from TRADECLOSEPRICE where TRADEDATE  = '22-OCT-23';
+
+
+SELECT i.CODE, i.ISSUESHARE, i.BASEUNITPRICE, cp.TRADECLOSEPRICE
+FROM INSTRUMENT i
+INNER JOIN TRADECLOSEPRICE cp ON cp.INSTRUMENTCODE = i.CODE AND cp.TRADEDATE  = '22-OCT-23'
+and i.BASEUNITPRICE <100
+order by  cp.TRADECLOSEPRICE desc, i.ISSUESHARE asc;
+
+
+SELECT i.CODE, i.ISSUESHARE, i.BASEUNITPRICE, cp.TRADECLOSEPRICE
+FROM INSTRUMENT i
+INNER JOIN TRADECLOSEPRICE cp ON cp.INSTRUMENTCODE = i.CODE AND cp.TRADEDATE  = '22-OCT-23'
+and i.BASEUNITPRICE <100
+and i.BASEUNITPRICE < cp.TRADECLOSEPRICE
+order by  i.ISSUESHARE asc;
+
+
+SELECT i.CODE, i.ISSUESHARE, i.BASEUNITPRICE, cp.TRADECLOSEPRICE
+FROM INSTRUMENT i
+INNER JOIN TRADECLOSEPRICE cp ON cp.INSTRUMENTCODE = i.CODE AND cp.TRADEDATE  = '22-OCT-23'
+and i.BASEUNITPRICE <100
+and i.ISSUESHARE < 8000000
+order by  cp.TRADECLOSEPRICE desc, i.ISSUESHARE asc;
+
+
+SELECT i.CODE, i.ISSUESHARE, i.BASEUNITPRICE, cp.TRADECLOSEPRICE
+FROM INSTRUMENT i
+INNER JOIN TRADECLOSEPRICE cp ON cp.INSTRUMENTCODE = i.CODE 
+and i.CODE = 'HIMADRI'
+order by cp.TRADEDATE asc;
+
+
+
+
+--------------------------------------- TRADEDATA ----------------------------------------------------
+
+SELECT MIN(TRADEDATE) AS MIN_DATE FROM TRADEDATA; -- 20-AUG-23
+SELECT MAX(TRADEDATE) AS MAX_DATE FROM TRADEDATA; -- 22-OCT-23
+select count(*) from TRADEDATA where TRADEDATE  = '22-OCT-23'; -- 135750
+select * from TRADEDATA where TRADEDATE  = '22-OCT-23';
+
+
+

@@ -1,0 +1,365 @@
+
+--------------------------------------------------------------------------------
+
+drop table TREC_SHARE_HOLDER_DESIG;
+drop table TR_SHARE_DIRECTOR_DETAILS;
+drop table TR_SHARE_HOLDER_DETAILS;
+drop table TR_SHARE_HOLDER_MASTER;
+drop view VW_SHARE_DIRECTOR_INFO;
+drop view VW_SHARE_HOLDER_INFO;
+
+
+SELECT constraint_name, table_name
+FROM user_constraints
+WHERE r_constraint_name IN (
+  SELECT constraint_name
+  FROM user_constraints
+  WHERE table_name = 'TR_SHARE_HOLDER_MASTER'
+    AND constraint_type IN ('P', 'U')
+);
+
+DELETE from TR_SHARE_HOLDER_DESIGNATION;
+DELETE from TR_SHARE_HOLDER_MASTER;
+DELETE from TR_SHARE_HOLDER_DIRECTOR;
+DELETE from TR_SHARE_HOLDER_DETAILS;
+DELETE from TR_SHARE_TRANSFER;
+
+commit;
+
+------------------------------------------------------
+ TR_SHARE_HOLDER_DESIGNATION
+------------------------------------------------------
+
+CREATE TABLE TR_SHARE_HOLDER_DESIGNATION 
+(
+    DESIGNATION_ID   NUMBER(5) NOT NULL,
+    DESIGNATION_NAME VARCHAR2(150) NOT NULL,
+    PRIORITY         NUMBER(5) NOT NULL,  -- Fixed column definition
+    STATUS           CHAR(1) DEFAULT 'A' NOT NULL, -- A=Active, I=Inactive, D=Deleted
+    CONSTRAINT PK_DESIGNATION_ID PRIMARY KEY (DESIGNATION_ID)
+);
+
+Insert into TREC_TREC.TR_SHARE_HOLDER_DESIGNATION (DESIGNATION_ID,DESIGNATION_NAME,STATUS,PRIORITY) values (1,'Managing Director','Y',3);
+Insert into TREC_TREC.TR_SHARE_HOLDER_DESIGNATION (DESIGNATION_ID,DESIGNATION_NAME,STATUS,PRIORITY) values (2,'Chairman','Y',1);
+Insert into TREC_TREC.TR_SHARE_HOLDER_DESIGNATION (DESIGNATION_ID,DESIGNATION_NAME,STATUS,PRIORITY) values (3,'Director','Y',2);
+Insert into TREC_TREC.TR_SHARE_HOLDER_DESIGNATION (DESIGNATION_ID,DESIGNATION_NAME,STATUS,PRIORITY) values (4,'PlacementHolder','Y',2);
+Insert into TREC_TREC.TR_SHARE_HOLDER_DESIGNATION (DESIGNATION_ID,DESIGNATION_NAME,STATUS,PRIORITY) values (5,'Nominee Director','Y',2);
+Insert into TREC_TREC.TR_SHARE_HOLDER_DESIGNATION (DESIGNATION_ID,DESIGNATION_NAME,STATUS,PRIORITY) values (6,'Others','Y',2);
+
+------------------------------------------------------
+ TR_SHARE_HOLDER_MASTER
+------------------------------------------------------
+
+CREATE TABLE TR_SHARE_HOLDER_MASTER 
+(
+    SHARE_HOLDER_MASTER_ID    NUMBER(8) NOT NULL,
+    TREC_ID            NUMBER(5) NOT NULL,
+    SHAREHOLDER_NAME   VARCHAR2(1000) NOT NULL,
+    FATHER_NAME        VARCHAR2(200),
+    MOTHER_NAME        VARCHAR2(200),
+    SPOUSE_NAME        VARCHAR2(200),
+    DATE_OF_BIRTH      DATE,
+    NID                VARCHAR2(200),
+    TIN                VARCHAR2(200),
+    IMAGE_PATH         VARCHAR2(500),
+    NID_PATH           VARCHAR2(500),
+    TIN_PATH           VARCHAR2(500),
+    GENDER             VARCHAR2(50),
+    PHONE              VARCHAR2(200),
+    MOBILE             VARCHAR2(200),
+    FAX                VARCHAR2(200),
+    EMAIL              VARCHAR2(200),
+    PRESENT_ADDRESS    VARCHAR2(200),
+    PERMANENT_ADDRESS  VARCHAR2(200),
+    TR_CATEGORY        CHAR(1) DEFAULT 'I' NOT NULL, -- Default 'I'
+    STATUS             CHAR(1) DEFAULT 'A' NOT NULL, -- A=Active, I=Inactive, D=Deleted
+    REMARKS            VARCHAR2(1000),
+    ADDED_AT           DATE NOT NULL,
+    ADDED_BY           NUMBER(5) NOT NULL,
+    CONSTRAINT PK_SHARE_MASTER_ID PRIMARY KEY (SHARE_HOLDER_MASTER_ID),
+    CONSTRAINT FK_SHAREMASTER_TREC FOREIGN KEY (TREC_ID) REFERENCES TREC (TREC_ID)
+);
+
+------------------------------------------------------
+ TR_SHARE_HOLDER_DIRECTOR
+------------------------------------------------------
+
+CREATE TABLE TR_SHARE_HOLDER_DIRECTOR (
+    SHARE_HOLDER_DIRECTOR_ID NUMBER(8) NOT NULL,
+    SHARE_HOLDER_MASTER_ID   NUMBER(8) NOT NULL,
+    DESIGNATION_ID           NUMBER(5) NOT NULL,
+    PARENT_COM_DETAILS       VARCHAR2(500),
+    EFFECTIVE_FROM           DATE NOT NULL,
+    EFFECTIVE_TO             DATE NOT NULL,
+    REASON_FOR_DISCHARGE     VARCHAR2(500) NOT NULL,
+    REMARKS                  VARCHAR2(1000),
+    STATUS                   CHAR(1) DEFAULT 'A' NOT NULL, -- A=Active, I=Inactive, D=Deleted
+    ADDED_AT                 DATE NOT NULL,
+    ADDED_BY                 NUMBER(5) NOT NULL,
+    CONSTRAINT PK_SHARE_HOLDER_DIRECTOR_ID PRIMARY KEY (SHARE_HOLDER_DIRECTOR_ID),
+    CONSTRAINT FK_SHARE_DIRECTOR_MASTER FOREIGN KEY (SHARE_HOLDER_MASTER_ID) REFERENCES TR_SHARE_HOLDER_MASTER (SHARE_HOLDER_MASTER_ID)
+);
+
+------------------------------------------------------
+ TR_SHARE_HOLDER_DETAILS
+------------------------------------------------------
+
+CREATE TABLE TR_SHARE_HOLDER_DETAILS (
+    SHARE_HOLDER_DETAILS_ID   NUMBER(8) NOT NULL,
+    SHARE_HOLDER_MASTER_ID           NUMBER(8) NOT NULL,
+    SHARE_TYPE                VARCHAR2(100) NOT NULL, -- BONUS, RIGHT, FRESH_ISSUED, GIFT, TRANSFER
+    NO_OF_SHARE_ADDED         NUMBER(12) NOT NULL,
+    NO_OF_SHARE_HELD          NUMBER(12) NOT NULL,
+    SHARE_POSITION_PERCENTAGE NUMBER(12,5) NOT NULL,
+    REMARKS                   VARCHAR2(1000),
+    ADDED_AT                  DATE NOT NULL,
+    ADDED_BY                  NUMBER(5) NOT NULL,
+    STATUS                    CHAR(1) DEFAULT 'A' NOT NULL, -- A=Active, I=Inactive, D=Deleted
+    CONSTRAINT PK_SHAREHOLDER_DETAILS_ID PRIMARY KEY (SHARE_HOLDER_DETAILS_ID),
+    CONSTRAINT FK_SHAREHOLDING_MASTER FOREIGN KEY (SHARE_HOLDER_MASTER_ID) REFERENCES TR_SHARE_HOLDER_MASTER (SHARE_HOLDER_MASTER_ID)
+);
+
+------------------------------------------------------
+ TR_SHARE_TRANSFER
+------------------------------------------------------
+
+CREATE TABLE TR_SHARE_TRANSFER (
+    SHARE_TRANSFER_ID          NUMBER(8) NOT NULL,
+    TRANSFER_DATE           DATE NOT NULL,
+    TRANSFER_FROM_MASTER_ID NUMBER(8) NOT NULL,
+    TRANSFER_TO_MASTER_ID   NUMBER(8) NOT NULL,
+    TRANSFER_NO_OF_SHARE    NUMBER(8) NOT NULL,
+    SHARE_TYPE              VARCHAR2(100) NOT NULL, -- GIFT, TRANSFER
+    REMARKS                 VARCHAR2(1000),
+    STATUS                  VARCHAR2(100) DEFAULT 'PENDING' NOT NULL, -- PENDING, CONFIRMED, DELETED
+    ADDED_AT                DATE NOT NULL,
+    ADDED_BY                NUMBER(5) NOT NULL,
+    CONSTRAINT PK_TR_TRANSFER_ID PRIMARY KEY (SHARE_TRANSFER_ID),
+    CONSTRAINT FK_SHARETRANSFER_FROM_MASTER FOREIGN KEY (TRANSFER_FROM_MASTER_ID) REFERENCES TR_SHARE_HOLDER_MASTER (SHARE_HOLDER_MASTER_ID),
+    CONSTRAINT FK_SHARETRANSFER_TO_MASTER FOREIGN KEY (TRANSFER_TO_MASTER_ID) REFERENCES TR_SHARE_HOLDER_MASTER (SHARE_HOLDER_MASTER_ID)
+);
+
+ ------------------------------------------------------
+ VW_SHARE_HOLDER_DETAILS
+------------------------------------------------------
+CREATE OR REPLACE VIEW "TREC_TREC"."VW_SHARE_HOLDER_DETAILS" (
+    "TREC_ID", "TREC_NO", "TREC_NAME", "TREC_CODE", "TOTAL_SHARE", "FACE_VALUE",
+    "SHARE_HOLDER_MASTER_ID", "SHAREHOLDER_NAME",  "FATHER_NAME", "MOTHER_NAME", "SPOUSE_NAME", "DATE_OF_BIRTH", "NID", "TIN", "IMAGE_PATH", "NID_PATH", "TIN_PATH", 
+    "GENDER", "PHONE", "MOBILE", "FAX", "EMAIL", "PRESENT_ADDRESS", "PERMANENT_ADDRESS", "TR_CATEGORY", 
+    "DESIGNATION_ID", "DESIGNATION_NAME", 
+    "SHARE_HOLDER_DIRECTOR_ID", "PARENT_COM_DETAILS", "EFFECTIVE_FROM", "EFFECTIVE_TO", "REASON_FOR_DISCHARGE", "REMARKS", "DIRECTOR_STATUS",
+    "SHARE_HOLDER_DETAILS_ID", "SHARE_TYPE", "NO_OF_SHARE_ADDED", "NO_OF_SHARE_HELD", "SHARE_POSITION_PERCENTAGE", "SHARE_DETAILS_STATUS", "ADDED_AT","ADDED_BY"
+) AS
+  SELECT
+    trec.TREC_ID,
+    trec.TREC_NO,
+    trec.NAME AS TREC_NAME,
+    trec.CODE AS TREC_CODE,
+    trec.TOTAL_SHARE AS TOTAL_SHARE,
+    trec.FACE_VALUE,  
+
+    shareHolderMaster.SHARE_HOLDER_MASTER_ID,  
+    shareHolderMaster.SHAREHOLDER_NAME,
+    shareHolderMaster.FATHER_NAME,
+    shareHolderMaster.MOTHER_NAME,
+    shareHolderMaster.SPOUSE_NAME,
+    shareHolderMaster.DATE_OF_BIRTH,                        
+    shareHolderMaster.NID,
+    shareHolderMaster.TIN,
+    shareHolderMaster.IMAGE_PATH,
+    shareHolderMaster.NID_PATH,
+    shareHolderMaster.TIN_PATH,
+
+    shareHolderMaster.GENDER,                        
+    shareHolderMaster.PHONE,
+    shareHolderMaster.MOBILE,
+    shareHolderMaster.FAX,
+    shareHolderMaster.EMAIL,                        
+    shareHolderMaster.PRESENT_ADDRESS,
+    shareHolderMaster.PERMANENT_ADDRESS,
+    shareHolderMaster.TR_CATEGORY,
+
+    designation.DESIGNATION_ID,
+    designation.DESIGNATION_NAME,
+
+    director.SHARE_HOLDER_DIRECTOR_ID,
+    director.PARENT_COM_DETAILS,
+    director.EFFECTIVE_FROM,
+    director.EFFECTIVE_TO,
+    director.REASON_FOR_DISCHARGE,
+    director.REMARKS,
+    director.STATUS as DIRECTOR_STATUS,
+
+    shareHolderDetails.SHARE_HOLDER_DETAILS_ID,
+    shareHolderDetails.SHARE_TYPE,
+    shareHolderDetails.NO_OF_SHARE_ADDED,
+    shareHolderDetails.NO_OF_SHARE_HELD,
+    shareHolderDetails.SHARE_POSITION_PERCENTAGE,
+    shareHolderDetails.STATUS as SHARE_DETAILS_STATUS,
+    TO_CHAR(shareHolderDetails.ADDED_AT,'dd-Mon-yyyy') AS ADDED_AT,  
+    shareHolderDetails.ADDED_BY
+
+FROM TR_SHARE_HOLDER_MASTER shareHolderMaster
+INNER JOIN TREC trec ON shareHolderMaster.TREC_ID = trec.TREC_ID
+LEFT JOIN TR_SHARE_HOLDER_DETAILS shareHolderDetails ON shareHolderMaster.SHARE_HOLDER_MASTER_ID = shareHolderDetails.SHARE_HOLDER_MASTER_ID
+LEFT JOIN TR_SHARE_HOLDER_DIRECTOR director ON shareHolderMaster.SHARE_HOLDER_MASTER_ID = director.SHARE_HOLDER_MASTER_ID --AND director.STATUS='A'
+LEFT JOIN TR_SHARE_HOLDER_DESIGNATION designation ON director.DESIGNATION_ID = designation.DESIGNATION_ID
+AND shareHolderDetails.SHARE_HOLDER_DETAILS_ID = (
+    SELECT MAX(shd.SHARE_HOLDER_DETAILS_ID)
+    FROM TR_SHARE_HOLDER_DETAILS shd
+    WHERE shd.SHARE_HOLDER_MASTER_ID = shareHolderMaster.SHARE_HOLDER_MASTER_ID
+    --AND shd.STATUS='A'
+) 
+ORDER BY trec.TREC_ID, shareHolderMaster.SHAREHOLDER_NAME;
+
+ ------------------------------------------------------
+ VW_SHARE_HOLDER_INFO
+------------------------------------------------------
+
+CREATE OR REPLACE VIEW "TREC_TREC"."VW_SHARE_HOLDER_INFO" (
+    "TREC_ID", "TREC_NO", "TREC_CODE", "TREC_NAME", "TOTAL_SHARE", "FACE_VALUE",
+    "PAID_UP_CAPITAL", "AUTHORISED_CAPITAL",
+    "SHARE_HOLDER_MASTER_ID", "SHAREHOLDER_NAME", "FATHER_NAME", "MOTHER_NAME", "SPOUSE_NAME", 
+    "DATE_OF_BIRTH", "NID", "TIN", "IMAGE_PATH", "NID_PATH", "TIN_PATH", 
+    "GENDER", "PHONE", "MOBILE", "FAX", "EMAIL", "PRESENT_ADDRESS", "PERMANENT_ADDRESS", 
+    "TR_CATEGORY", "SHARE_MASTER_STATUS", "SHARE_MASTER_REMARKS",
+    "SHARE_HOLDER_DETAILS_ID", "SHARE_TYPE", "NO_OF_SHARE_ADDED", "NO_OF_SHARE_HELD", 
+    "SHARE_POSITION_PERCENTAGE", "SHARE_DETAIL_STATUS", "SHARE_DETAIL_REMARKS", 
+    "DESIGNATION_ID", "DESIGNATION_NAME", "PRIORITY", "DESIGNATION_STATUS",
+    "SHARE_HOLDER_DIRECTOR_ID", "PARENT_COM_DETAILS", "EFFECTIVE_FROM", "EFFECTIVE_TO", 
+    "REASON_FOR_DISCHARGE", "DIRECTOR_REMARKS", "DIRECTOR_STATUS"
+) AS 
+
+SELECT 
+
+    t.TREC_ID,
+    t.TREC_NO,
+    t.CODE as TREC_CODE,
+    t.NAME as TREC_NAME,
+    NVL(t.TOTAL_SHARE,0) TOTAL_SHARE,
+    NVL(t.FACE_VALUE,0) FACE_VALUE,
+    
+    NVL(p.PAID_UP_CAPITAL,0) PAID_UP_CAPITAL,
+    NVL(a.AUTHORISED_CAPITAL,0) AUTHORISED_CAPITAL,
+
+    sh.SHARE_HOLDER_MASTER_ID,
+    sh.SHAREHOLDER_NAME,
+    sh.FATHER_NAME,
+    sh.MOTHER_NAME,
+    sh.SPOUSE_NAME,
+    sh.DATE_OF_BIRTH,
+    sh.NID,
+    sh.TIN,
+    sh.IMAGE_PATH,
+    sh.NID_PATH,
+    sh.TIN_PATH,
+    sh.GENDER,
+    sh.PHONE,
+    sh.MOBILE,
+    sh.FAX,
+    sh.EMAIL,
+    sh.PRESENT_ADDRESS,
+    sh.PERMANENT_ADDRESS,
+    sh.TR_CATEGORY,
+    sh.STATUS SHARE_MASTER_STATUS,
+    sh.REMARKS SHARE_MASTER_REMARKS,
+ 
+    shd.SHARE_HOLDER_DETAILS_ID,    
+    shd.SHARE_TYPE,
+    shd.NO_OF_SHARE_ADDED,
+    shd.NO_OF_SHARE_HELD,
+    shd.SHARE_POSITION_PERCENTAGE,
+    shd.STATUS SHARE_DETAIL_STATUS,
+    shd.REMARKS SHARE_DETAIL_REMARKS,    
+
+    NVL(td.DESIGNATION_ID, 0) AS DESIGNATION_ID,
+    td.DESIGNATION_NAME,
+    td.PRIORITY,
+    td.STATUS DESIGNATION_STATUS,
+    
+    sd.SHARE_HOLDER_DIRECTOR_ID,
+    sd.PARENT_COM_DETAILS,
+    sd.EFFECTIVE_FROM,
+    sd.EFFECTIVE_TO,
+    sd.REASON_FOR_DISCHARGE,
+    sd.REMARKS DIRECTOR_REMARKS,
+    sd.STATUS DIRECTOR_STATUS
+   
+FROM  tr_share_holder_master sh
+INNER JOIN TREC t  ON sh.TREC_ID = t.TREC_ID   
+LEFT JOIN TREC_AUTHORISED_CAPITAL  a ON t.TREC_ID = a.TREC_ID
+LEFT JOIN TREC_PAIDUP_CAPITAL  p  ON t.TREC_ID = p.TREC_ID    
+LEFT JOIN  tr_share_holder_details shd ON sh.share_holder_master_id = shd.share_holder_master_id
+LEFT JOIN  tr_share_holder_director sd ON sh.share_holder_master_id = sd.share_holder_master_id AND sd.status = 'A'
+LEFT JOIN  tr_share_holder_designation td  ON sd.designation_id = td.designation_id
+WHERE  shd.SHARE_HOLDER_DETAILS_ID = (
+    SELECT MAX(shd.SHARE_HOLDER_DETAILS_ID)
+    FROM TR_SHARE_HOLDER_DETAILS shd_in
+    WHERE shd_in.SHARE_HOLDER_MASTER_ID = sh.SHARE_HOLDER_MASTER_ID
+)      -- This filters out records that have a matching entry in t2
+
+UNION
+
+-- Second part (shareholders with a designation)
+SELECT 
+
+     t.TREC_ID,
+    t.TREC_NO,
+    t.CODE as TREC_CODE,
+    t.NAME as TREC_NAME,
+    NVL(t.TOTAL_SHARE,0) TOTAL_SHARE,
+    NVL(t.FACE_VALUE,0) FACE_VALUE,
+    
+    NVL(p.PAID_UP_CAPITAL,0) PAID_UP_CAPITAL,
+    NVL(a.AUTHORISED_CAPITAL,0) AUTHORISED_CAPITAL,
+
+    sh.SHARE_HOLDER_MASTER_ID,
+    sh.SHAREHOLDER_NAME,
+    sh.FATHER_NAME,
+    sh.MOTHER_NAME,
+    sh.SPOUSE_NAME,
+    sh.DATE_OF_BIRTH,
+    sh.NID,
+    sh.TIN,
+    sh.IMAGE_PATH,
+    sh.NID_PATH,
+    sh.TIN_PATH,
+    sh.GENDER,
+    sh.PHONE,
+    sh.MOBILE,
+    sh.FAX,
+    sh.EMAIL,
+    sh.PRESENT_ADDRESS,
+    sh.PERMANENT_ADDRESS,
+    sh.TR_CATEGORY,
+    sh.STATUS SHARE_MASTER_STATUS,
+    sh.REMARKS SHARE_MASTER_REMARKS,
+ 
+    shd.SHARE_HOLDER_DETAILS_ID,    
+    shd.SHARE_TYPE,
+    shd.NO_OF_SHARE_ADDED,
+    shd.NO_OF_SHARE_HELD,
+    shd.SHARE_POSITION_PERCENTAGE,
+    shd.STATUS SHARE_DETAIL_STATUS,
+    shd.REMARKS SHARE_DETAIL_REMARKS,    
+
+    NVL(td.DESIGNATION_ID, 0) AS DESIGNATION_ID,
+    td.DESIGNATION_NAME,
+    td.PRIORITY,
+    td.STATUS DESIGNATION_STATUS,
+    
+    sd.SHARE_HOLDER_DIRECTOR_ID,
+    sd.PARENT_COM_DETAILS,
+    sd.EFFECTIVE_FROM,
+    sd.EFFECTIVE_TO,
+    sd.REASON_FOR_DISCHARGE,
+    sd.REMARKS DIRECTOR_REMARKS,
+    sd.STATUS DIRECTOR_STATUS
+
+FROM tr_share_holder_master sh
+INNER JOIN TREC t ON sh.TREC_ID = t.TREC_ID   
+LEFT JOIN TREC_AUTHORISED_CAPITAL  a ON t.TREC_ID = a.TREC_ID
+LEFT JOIN TREC_PAIDUP_CAPITAL  p  ON t.TREC_ID = p.TREC_ID        
+LEFT JOIN tr_share_holder_details shd  ON sh.share_holder_master_id = shd.share_holder_master_id
+JOIN  tr_share_holder_director sd ON sh.share_holder_master_id = sd.share_holder_master_id AND sd.status = 'A' -- Filter status early
+LEFT JOIN tr_share_holder_designation td ON sd.designation_id = td.designation_id;

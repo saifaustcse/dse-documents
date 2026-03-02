@@ -1,0 +1,687 @@
+
+ 
+----------- Find tables in an Oracle database where data exists--------------------------------
+ 
+SELECT table_name, TO_NUMBER(
+    EXTRACTVALUE(
+        xmltype(
+            DBMS_XMLGEN.GETXML('SELECT COUNT(*) c FROM ' || table_name)
+        ),
+        '/ROWSET/ROW/C'
+    )
+) AS num_rows
+FROM user_tables;
+
+------------------------------------------------------
+-- Query to check dependent constraints
+------------------------------------------------------
+
+SELECT constraint_name, table_name
+FROM user_constraints
+WHERE r_constraint_name IN (
+  SELECT constraint_name
+  FROM user_constraints
+  WHERE table_name = 'USER_INFO'
+    AND constraint_type IN ('P', 'U')
+);
+
+------------------------------------------------------
+
+select * from TMS_USER.ROLE_MENU;
+select * from TMS_USER.USER_ROLE;
+select * from TMS_USER.MENU;
+select * from TMS_USER.ROLE;
+
+select * from TMS_USER.AUDIT_LOGIN;
+select * from TMS_USER.AUDIT_DETAIL;
+select *from TMS_USER.AUDIT_MASTER;
+
+select * from TMS_USER.USER_HOMEPAGE;
+select * from TMS_USER.SYS_PARAM;
+select * from TMS_USER.USER_INFO;
+select * from TMS_USER.USER_PROFILE;
+select * from TMS_USER.USER_CATEGORY;
+
+------------------------------------------------------
+
+delete from TMS_USER.ROLE_MENU;
+delete from TMS_USER.USER_ROLE;
+delete from TMS_USER.MENU;
+--delete from TMS_USER.ROLE;
+
+delete from TMS_USER.AUDIT_LOGIN;
+delete from TMS_USER.AUDIT_DETAIL;
+delete from TMS_USER.AUDIT_MASTER;
+
+--delete from TMS_USER.USER_HOMEPAGE;
+--delete from TMS_USER.SYS_PARAM;
+--delete from TMS_USER.USER_INFO;
+--delete from TMS_USER.USER_PROFILE;
+--delete from TMS_USER.USER_CATEGORY;
+commit;
+
+------------------------------------------------------
+
+-- drop table TMS_USER.ROLE_MENU;
+-- drop table TMS_USER.USER_ROLE;
+-- drop table TMS_USER.ROLE;
+-- drop table TMS_USER.MENU;
+
+-- drop table TMS_USER.AUDIT_LOGIN;
+-- drop table TMS_USER.AUDIT_DETAIL;
+-- drop table TMS_USER.AUDIT_MASTER;
+
+-- drop table TMS_USER.USER_HOMEPAGE;
+-- drop table TMS_USER.SYS_PARAM;
+-- drop table TMS_USER.USER_INFO;
+-- drop table TMS_USER.USER_PROFILE;
+-- drop table TMS_USER.USER_CATEGORY;
+
+-- drop view TMS_USER.VW_MENU;
+-- drop view TMS_USER.VW_USER;
+
+-- drop view TMS_USER.VW_AUDIT;
+-- drop view TMS_USER.VW_AUDIT_LOGIN;
+
+
+------------------------------------------------------
+-- TMS_USER.USER_CATEGORY
+------------------------------------------------------
+
+CREATE TABLE USER_CATEGORY
+(
+    USER_CAT_ID   NUMBER(5) NOT NULL,                    
+    USER_CAT_NAME VARCHAR2(100) NOT NULL,    -- DSE, TREC, BSEC  
+    HOMEPAGE_LINK VARCHAR2(255),  -- Each category has one link
+   
+    REMARKS       VARCHAR2(500),                    
+    ADDED_AT      DATE DEFAULT SYSDATE NOT NULL,        
+    ADDED_BY      NUMBER(10) NOT NULL,                    
+    UPDATED_AT    DATE,                                
+    UPDATED_BY    NUMBER(10),                                
+
+    IS_ACTIVE     NUMBER(1) DEFAULT 1 NOT NULL, -- Temporary activation status       
+    IS_DELETED    NUMBER(1) DEFAULT 0 NOT NULL, -- Soft delete flag    
+
+    CONSTRAINT PK_USER_CATEGORY PRIMARY KEY (USER_CAT_ID)
+    --CONSTRAINT FK_USER_CATEGORY_ADDED_BY FOREIGN KEY (ADDED_BY) REFERENCES USER_INFO(USER_ID)  
+);
+
+INSERT INTO USER_CATEGORY (USER_CAT_ID, USER_CAT_NAME, HOMEPAGE_LINK, REMARKS, ADDED_AT, ADDED_BY, UPDATED_AT, UPDATED_BY, IS_ACTIVE, IS_DELETED)
+VALUES (1, 'DSE', 'HomeDse.aspx', 'Dhaka Stock Exchange category', SYSDATE, 1, NULL, NULL, 1, 0);
+
+INSERT INTO USER_CATEGORY (USER_CAT_ID, USER_CAT_NAME, HOMEPAGE_LINK, REMARKS, ADDED_AT, ADDED_BY, UPDATED_AT, UPDATED_BY, IS_ACTIVE, IS_DELETED)
+VALUES (2, 'TREC', 'HomeTrec.aspx', 'Trading Right Entitlement Certificate', SYSDATE, 1, NULL, NULL, 1, 0);
+
+INSERT INTO USER_CATEGORY (USER_CAT_ID, USER_CAT_NAME, HOMEPAGE_LINK, REMARKS, ADDED_AT, ADDED_BY, UPDATED_AT, UPDATED_BY, IS_ACTIVE, IS_DELETED)
+VALUES (3, 'BSEC', 'HomeBsec.aspx', 'Bangladesh Securities and Exchange Commission', SYSDATE, 1, NULL, NULL, 1, 0);
+
+commit;
+select * from USER_CATEGORY;
+
+------------------------------------------------------
+-- TMS_USER.USER_PROFILE
+------------------------------------------------------
+
+CREATE TABLE USER_PROFILE
+(
+    USER_PROFILE_ID             NUMBER(10) NOT NULL,    
+    USER_CAT_ID                 NUMBER(5) NOT NULL,
+    USER_IDENTIFIER_NAME    VARCHAR2(50) NOT NULL,  -- e.g., 'DSE_EIN', 'BSEC_EIN', 'TREC_NO'
+    USER_IDENTIFIER_VALUE   VARCHAR2(50), -- e.g., '496', '75' , '5'
+    
+    FULL_NAME                   VARCHAR2(255) NOT NULL,
+    MOBILE                      VARCHAR2(15) NOT NULL,
+    EMAIL                       VARCHAR2(150) NOT NULL,  
+    GENDER                      VARCHAR2(10) NOT NULL CHECK (GENDER IN ('Male', 'Female', 'Other')),  
+    DATE_OF_BIRTH               DATE,
+    NID                         VARCHAR2(50),   
+    DESIGNATION                 VARCHAR2(255),
+    PERMANENT_ADDRESS           VARCHAR2(500),           
+    PRESENT_ADDRESS             VARCHAR2(500),           
+    REMARKS                     VARCHAR2(500),                    
+
+    CONSTRAINT PK_USER_PROFILE PRIMARY KEY (USER_PROFILE_ID),
+    CONSTRAINT FK_USER_PROFILE_USER_CATEGORY FOREIGN KEY (USER_CAT_ID) REFERENCES USER_CATEGORY(USER_CAT_ID)
+    --CONSTRAINT FK_USER_PROFILE_ADDED_BY FOREIGN KEY (ADDED_BY) REFERENCES USER_INFO(USER_ID)  
+);
+
+
+------------------------------------------------------
+-- TMS_USER.USER_INFO (Login & User Role Management)
+------------------------------------------------------
+
+CREATE TABLE USER_INFO
+(
+    USER_ID                 NUMBER(10) NOT NULL,    
+    USER_PROFILE_ID         NUMBER(10) NOT NULL UNIQUE,
+
+    USER_NAME               VARCHAR2(100) UNIQUE,  
+    PASSWORD_HASH           VARCHAR2(100),
+    PASSWORD_CHANGE_DATE    DATE,  
+
+    IS_OTP_DISABLED          NUMBER(1) DEFAULT 0 NOT NULL,
+    OTP_CODE                VARCHAR2(10),
+
+    PASSWORD_WRONG_ATTEMPTS    NUMBER(2) DEFAULT 0 NOT NULL,  -- 2 digits (max 99 attempts) 
+    IS_PROFILE_LOCKED       NUMBER(1) DEFAULT 0 NOT NULL,
+    PROFILE_LOCK_UNTIL      DATE,  
+    REMARKS                 VARCHAR2(500),                    
+
+    ADDED_AT                DATE DEFAULT SYSDATE NOT NULL,        
+    ADDED_BY                NUMBER(10) NOT NULL,                   
+    UPDATED_AT              DATE,                                
+    UPDATED_BY              NUMBER(10),                           
+
+    --IS_ACTIVE              NUMBER(1) DEFAULT 1 NOT NULL, -- Temporary activation status       
+    STATUS VARCHAR2(50 CHAR) NOT NULL CHECK (STATUS IN ('CREATED', 'VERIFIED', 'REJECTED', 'ACTIVE', 'INACTIVE')),
+    IS_DELETED             NUMBER(1) DEFAULT 0 NOT NULL, -- Soft delete flag    
+
+    CONSTRAINT PK_USER_INFO PRIMARY KEY (USER_ID),  
+    CONSTRAINT FK_USER_INFO_PROFILE FOREIGN KEY (USER_PROFILE_ID) REFERENCES USER_PROFILE(USER_PROFILE_ID)  
+    --CONSTRAINT FK_USER_INFO_ADDED_BY FOREIGN KEY (ADDED_BY) REFERENCES USER_INFO(USER_ID),  
+    --CONSTRAINT FK_USER_INFO_UPDATED_BY FOREIGN KEY (UPDATED_BY) REFERENCES USER_INFO(USER_ID)  
+);
+
+
+-- Insert INTO USER_INFO for each Dse User from the Script "4 dse-user-migration"
+
+INSERT INTO USER_INFO ( USER_ID, USER_PROFILE_ID, USER_NAME, PASSWORD_HASH, ADDED_AT, ADDED_BY, STATUS, IS_DELETED)
+SELECT USER_PROFILE_ID, USER_PROFILE_ID, USER_IDENTIFIER_VALUE,'MQ==',SYSDATE, 1, 'ACTIVE', 0
+FROM USER_PROFILE
+WHERE USER_CAT_ID = 1;
+
+-- Insert INTO USER_INFO for each Trec User from the Script "5 trec-user-migration"
+
+INSERT INTO USER_INFO (USER_ID, USER_PROFILE_ID, USER_NAME,PASSWORD_HASH, ADDED_AT, ADDED_BY, STATUS, IS_DELETED)
+SELECT USER_PROFILE_ID, USER_PROFILE_ID, LOWER(REMARKS) || '.admin', 'MQ==', SYSDATE, 1, 'ACTIVE', 0
+FROM USER_PROFILE
+WHERE USER_CAT_ID = 2;
+
+commit;
+
+
+select * from USER_INFO;
+select * from user_profile  where USER_IDENTIFIER_VALUE = 2;
+
+update USER_INFO set PASSWORD_HASH = 'MQ==',  PASSWORD_CHANGE_DATE= SYSDATE where USER_ID = 1;  -- 496
+update USER_INFO set PASSWORD_HASH = 'MQ==', PASSWORD_CHANGE_DATE= SYSDATE  where USER_ID = 2;  -- 108
+update USER_INFO set PASSWORD_HASH = 'MQ==', PASSWORD_CHANGE_DATE= SYSDATE  where USER_ID = 9;  -- 111
+update USER_INFO set PASSWORD_HASH = 'MQ==', PASSWORD_CHANGE_DATE= SYSDATE  where USER_ID = 24; -- 91
+update USER_INFO set PASSWORD_HASH = 'MQ==', PASSWORD_CHANGE_DATE= SYSDATE  where USER_ID = 30; -- 555
+update USER_INFO set PASSWORD_HASH = 'MQ==',  PASSWORD_CHANGE_DATE= SYSDATE where USER_ID = 35; -- isp.admin
+update USER_INFO set PASSWORD_HASH = 'MQ==',  PASSWORD_CHANGE_DATE= SYSDATE where USER_ID = 36; -- hos.admin
+
+
+update USER_INFO set PASSWORD_HASH = 'MQ==', PASSWORD_CHANGE_DATE= SYSDATE  where USER_ID = 136; -- pis.admin
+update USER_INFO set PASSWORD_HASH = 'MQ==', PASSWORD_CHANGE_DATE= SYSDATE  where USER_ID = 156; -- mbs.admin
+update USER_INFO set PASSWORD_HASH = 'MQ==', PASSWORD_CHANGE_DATE= SYSDATE  where USER_ID = 164; -- lan.admin
+update USER_INFO set PASSWORD_HASH = 'MQ==', PASSWORD_CHANGE_DATE= SYSDATE  where USER_ID = 218; -- gsl.admin
+update USER_INFO set PASSWORD_HASH = 'MQ==', PASSWORD_CHANGE_DATE= SYSDATE  where USER_ID = 328; -- win.admin
+
+commit;
+
+------------------------------------------------------
+-- TMS_USER.USER_HOMEPAGE (User-Specific Homepage)
+------------------------------------------------------
+
+CREATE TABLE USER_HOMEPAGE
+(
+    USER_HOMEPAGE_ID   NUMBER(10) NOT NULL, 
+    USER_ID            NUMBER(10) NOT NULL,  
+    HOMEPAGE_LINK      VARCHAR2(255) NOT NULL,
+
+    ADDED_AT          DATE DEFAULT SYSDATE NOT NULL,        
+    ADDED_BY          NUMBER(10) NOT NULL,                    
+    UPDATED_AT        DATE,                                
+    UPDATED_BY        NUMBER(10),                           
+
+    IS_ACTIVE         NUMBER(1) DEFAULT 1 NOT NULL, -- Temporary activation status       
+    IS_DELETED        NUMBER(1) DEFAULT 0 NOT NULL, -- Soft delete flag    
+
+    CONSTRAINT PK_USER_HOMEPAGE PRIMARY KEY (USER_HOMEPAGE_ID),  
+    CONSTRAINT FK_USER_HOMEPAGE_USER FOREIGN KEY (USER_ID) REFERENCES USER_INFO(USER_ID) ON DELETE CASCADE,
+    CONSTRAINT FK_USER_HOMEPAGE_ADDED_BY FOREIGN KEY (ADDED_BY) REFERENCES USER_INFO(USER_ID),  
+    CONSTRAINT FK_USER_HOMEPAGE_UPDATED_BY FOREIGN KEY (UPDATED_BY) REFERENCES USER_INFO(USER_ID)  
+);
+
+------------------------------------------------------
+-- TMS_USER.SYS_PARAM
+------------------------------------------------------
+
+CREATE TABLE SYS_PARAM
+(
+    SYS_PARAM_ID  NUMBER(10) NOT NULL,    
+    PARAM_NAME    VARCHAR2(50) NOT NULL,     
+    PARAM_VALUE   VARCHAR2(255),
+
+    REMARKS       VARCHAR2(500),                    
+    ADDED_AT      DATE DEFAULT SYSDATE NOT NULL,        
+    ADDED_BY      NUMBER(10) NOT NULL,                   
+    UPDATED_AT    DATE,                                
+    UPDATED_BY    NUMBER(10),                           
+
+    IS_ACTIVE     NUMBER(1) DEFAULT 1 NOT NULL, -- Temporary activation status       
+    IS_DELETED    NUMBER(1) DEFAULT 0 NOT NULL, -- Soft delete flag  
+
+    CONSTRAINT PK_SYS_PARAM PRIMARY KEY (SYS_PARAM_ID),
+    CONSTRAINT FK_SYS_PARAM_ADDED_BY FOREIGN KEY (ADDED_BY) REFERENCES USER_INFO(USER_ID),  
+    CONSTRAINT FK_SYS_PARAM_UPDATED_BY FOREIGN KEY (UPDATED_BY) REFERENCES USER_INFO(USER_ID)  
+);
+
+-- Insert dummy data into SYS_PARAM
+
+INSERT INTO SYS_PARAM (SYS_PARAM_ID, PARAM_NAME, PARAM_VALUE, REMARKS,ADDED_AT, ADDED_BY, UPDATED_AT, UPDATED_BY,IS_ACTIVE, IS_DELETED) 
+VALUES (1, 'SESSION_TIMEOUT_MIN', 30, 'Session timeout in minutes',SYSDATE, 1, NULL, NULL, 1, 0);
+
+INSERT INTO SYS_PARAM (SYS_PARAM_ID, PARAM_NAME, PARAM_VALUE, REMARKS,ADDED_AT, ADDED_BY, UPDATED_AT, UPDATED_BY,IS_ACTIVE, IS_DELETED) 
+VALUES (2, 'PASSWORD_EXPIRY_DAYS', 30, 'Password Expiry in days. After life user password will be expired and grace login time will be started',SYSDATE, 1, NULL, NULL, 1, 0);
+
+INSERT INTO SYS_PARAM (SYS_PARAM_ID, PARAM_NAME, PARAM_VALUE, REMARKS,ADDED_AT, ADDED_BY, UPDATED_AT, UPDATED_BY,IS_ACTIVE, IS_DELETED) 
+VALUES (3, 'PASSWORD_EXPIRY_ALERT_DAYS', 10, 'Show password expiry alert 10 days before expiration',SYSDATE, 1, NULL, NULL, 1, 0);
+
+INSERT INTO SYS_PARAM (SYS_PARAM_ID, PARAM_NAME, PARAM_VALUE, REMARKS,ADDED_AT, ADDED_BY, UPDATED_AT, UPDATED_BY,IS_ACTIVE, IS_DELETED) 
+VALUES (4, 'IS_PROFILE_LOCK_ENABLE', 0, 'Enable (1) or disable (0) profile locking for users', SYSDATE, 1, NULL, NULL, 1, 0);
+
+INSERT INTO SYS_PARAM (SYS_PARAM_ID, PARAM_NAME, PARAM_VALUE, REMARKS,ADDED_AT, ADDED_BY, UPDATED_AT, UPDATED_BY,IS_ACTIVE, IS_DELETED) 
+VALUES (5, 'MAX_PASSWORD_WRONG_ATTEMPTS', 5, 'Maximum number of wrong login attempts allowed', SYSDATE, 1, NULL, NULL, 1, 0);
+
+INSERT INTO SYS_PARAM (SYS_PARAM_ID, PARAM_NAME, PARAM_VALUE, REMARKS,ADDED_AT, ADDED_BY, UPDATED_AT, UPDATED_BY,IS_ACTIVE, IS_DELETED) 
+VALUES (6, 'TEMPORARY_PROFILE_LOCK_MIN', 10, 'Temporay profile lock time in minutes. After this period the user account will be unlocked', SYSDATE, 1, NULL, NULL, 1, 0);
+
+INSERT INTO SYS_PARAM (SYS_PARAM_ID, PARAM_NAME, PARAM_VALUE, REMARKS,ADDED_AT, ADDED_BY, UPDATED_AT, UPDATED_BY,IS_ACTIVE, IS_DELETED) 
+VALUES (7, 'IS_OTP_ENABLE_FOR_TREC_USERS', 0, 'Enable (1) or disable (0) OTP for TREC users', SYSDATE, 1, NULL, NULL, 1, 0);
+
+INSERT INTO SYS_PARAM (SYS_PARAM_ID, PARAM_NAME, PARAM_VALUE, REMARKS,ADDED_AT, ADDED_BY, UPDATED_AT, UPDATED_BY,IS_ACTIVE, IS_DELETED) 
+VALUES (8, 'IS_OTP_ENABLE_FOR_DSE_USERS', 0, 'Enable (1) or disable (0) OTP for DSE users', SYSDATE, 1, NULL, NULL, 1, 0);
+
+INSERT INTO SYS_PARAM (SYS_PARAM_ID, PARAM_NAME, PARAM_VALUE, REMARKS,ADDED_AT, ADDED_BY, UPDATED_AT, UPDATED_BY,IS_ACTIVE, IS_DELETED) 
+VALUES (9, 'IS_OTP_ENABLE_FOR_BSEC_USERS', 0, 'Enable (1) or disable (0) OTP for BSEC users', SYSDATE, 1, NULL, NULL, 1, 0);
+
+INSERT INTO SYS_PARAM (SYS_PARAM_ID, PARAM_NAME, PARAM_VALUE, REMARKS,ADDED_AT, ADDED_BY, UPDATED_AT, UPDATED_BY,IS_ACTIVE, IS_DELETED) 
+VALUES (10, 'MAX_TREC_USERS', 5, 'Maximum number of TREC Users', SYSDATE, 1, NULL, NULL, 1, 0);
+
+COMMIT;
+select * from SYS_PARAM;
+
+------------------------------------------------------
+TMS_USER.VW_USER
+------------------------------------------------------
+
+CREATE OR REPLACE FORCE VIEW "TMS_USER"."VW_USER"  
+( "USER_PROFILE_ID", "USER_CAT_ID", "USER_CAT_NAME", "HOMEPAGE_LINK", "USER_IDENTIFIER_NAME",  "USER_IDENTIFIER_VALUE", 
+  "FULL_NAME", "MOBILE", "EMAIL", "GENDER", "DATE_OF_BIRTH", "NID", "DESIGNATION","PERMANENT_ADDRESS", "PRESENT_ADDRESS", "PROFILE_REMARKS", 
+  "USER_ID", "USER_NAME", "PASSWORD_CHANGE_DATE","IS_OTP_DISABLED", "OTP_CODE", "PASSWORD_WRONG_ATTEMPTS", "IS_PROFILE_LOCKED", "PROFILE_LOCK_UNTIL",
+  "ADDED_AT", "ADDED_BY", "UPDATED_AT",  "UPDATED_BY", "INFO_REMARKS","STATUS", "IS_DELETED"
+) 
+AS SELECT    
+    up.USER_PROFILE_ID,
+    up.USER_CAT_ID,
+    uc.USER_CAT_NAME,
+    uc.HOMEPAGE_LINK,
+    up.USER_IDENTIFIER_NAME,
+    up.USER_IDENTIFIER_VALUE,
+
+    up.FULL_NAME,
+    up.MOBILE,
+    up.EMAIL,
+    up.GENDER,
+    up.DATE_OF_BIRTH,
+    up.NID,
+    up.DESIGNATION,
+    up.PERMANENT_ADDRESS,
+    up.PRESENT_ADDRESS,
+    up.REMARKS as PROFILE_REMARKS,
+
+    ui.USER_ID,
+    ui.USER_NAME,
+    ui.PASSWORD_CHANGE_DATE,
+    ui.IS_OTP_DISABLED,
+    ui.OTP_CODE,  
+    ui.PASSWORD_WRONG_ATTEMPTS,    
+    ui.IS_PROFILE_LOCKED,    
+    ui.PROFILE_LOCK_UNTIL,    
+    
+    ui.ADDED_AT,
+    ui.ADDED_BY,
+    ui.UPDATED_AT,
+    ui.UPDATED_BY,
+    ui.REMARKS as INFO_REMARKS,
+    ui.STATUS,
+    ui.IS_DELETED
+   
+FROM USER_PROFILE up
+INNER JOIN USER_CATEGORY uc ON up.USER_CAT_ID = uc.USER_CAT_ID
+INNER JOIN USER_INFO ui ON up.USER_PROFILE_ID = ui.USER_PROFILE_ID;
+
+select * from VW_USER;
+
+------------------------------------------------------
+TMS_USER.TBLROLE
+------------------------------------------------------
+
+CREATE TABLE ROLE
+(
+    ROLE_ID      NUMBER(5) NOT NULL ,     
+    USER_CAT_ID  NUMBER(5) NOT NULL,
+    ROLE_NAME    VARCHAR2(100) NOT NULL,  -- Role name (e.g., "Admin", "User")
+    DESCRIPTION  VARCHAR2(255), 
+
+    ADDED_AT      DATE DEFAULT SYSDATE NOT NULL,        
+    ADDED_BY      NUMBER(10) NOT NULL,                    
+    UPDATED_AT    DATE,                                
+    UPDATED_BY    NUMBER(10), 
+
+    IS_ACTIVE     NUMBER(1) DEFAULT 1 NOT NULL, -- Temporary activation status       
+    IS_DELETED    NUMBER(1) DEFAULT 0 NOT NULL, -- Soft delete flag    
+
+    CONSTRAINT PK_ROLE PRIMARY KEY (ROLE_ID),  
+    CONSTRAINT FK_ROLE_USER_CAT_ID FOREIGN KEY (USER_CAT_ID) REFERENCES USER_CATEGORY(USER_CAT_ID),
+    CONSTRAINT FK_ROLE_ADDED_BY FOREIGN KEY (ADDED_BY) REFERENCES USER_INFO(USER_ID),
+    CONSTRAINT FK_ROLE_UPDATED_BY FOREIGN KEY (UPDATED_BY) REFERENCES USER_INFO(USER_ID)  
+);
+
+INSERT INTO ROLE (ROLE_ID, USER_CAT_ID, ROLE_NAME, DESCRIPTION, ADDED_BY)
+VALUES (1, 1, 'SuperAdmin', 'Advanced privileges for configuring the entire software metadata', 1);
+
+INSERT INTO ROLE (ROLE_ID, USER_CAT_ID, ROLE_NAME, DESCRIPTION, ADDED_BY)
+VALUES (2, 1, 'Admin', 'Administrator with full control over system operations', 1);
+
+INSERT INTO ROLE (ROLE_ID, USER_CAT_ID, ROLE_NAME, DESCRIPTION, ADDED_BY)
+VALUES (3, 1, 'Regular User', 'General user with standard access permissions', 1);
+
+INSERT INTO ROLE (ROLE_ID, USER_CAT_ID, ROLE_NAME, DESCRIPTION, ADDED_BY)
+VALUES (4, 1, 'Viewer', 'Read-only access user', 1);
+
+INSERT INTO ROLE (ROLE_ID, USER_CAT_ID, ROLE_NAME, DESCRIPTION, ADDED_BY)
+VALUES (5, 1, 'TAD', 'TREC Affairs Department', 1);
+
+INSERT INTO ROLE (ROLE_ID, USER_CAT_ID, ROLE_NAME, DESCRIPTION, ADDED_BY)
+VALUES (6, 1, 'MCD', 'Monitoring and Compliance Department', 1);
+
+INSERT INTO ROLE (ROLE_ID, USER_CAT_ID, ROLE_NAME, DESCRIPTION, ADDED_BY)
+VALUES (7, 1, 'APP', 'Application Support ', 1);
+
+INSERT INTO ROLE (ROLE_ID, USER_CAT_ID, ROLE_NAME, DESCRIPTION, ADDED_BY)
+VALUES (8, 1, 'SYS', 'System and Market Administration', 1);
+
+INSERT INTO ROLE (ROLE_ID, USER_CAT_ID, ROLE_NAME, DESCRIPTION, ADDED_BY)
+VALUES (9, 1, 'NET', 'Network Development ', 1);
+
+INSERT INTO ROLE (ROLE_ID, USER_CAT_ID, ROLE_NAME, DESCRIPTION, ADDED_BY)
+VALUES (10, 1, 'MIS', 'MIS and Development Department', 1);
+
+INSERT INTO ROLE (ROLE_ID, USER_CAT_ID, ROLE_NAME, DESCRIPTION, ADDED_BY)
+VALUES (11, 2, 'TREC Admin', 'TREC Admin', 1);
+
+INSERT INTO ROLE (ROLE_ID, USER_CAT_ID, ROLE_NAME, DESCRIPTION, ADDED_BY)
+VALUES (12, 2, 'TREC Checker', 'TREC Checker', 1);
+
+INSERT INTO ROLE (ROLE_ID, USER_CAT_ID, ROLE_NAME, DESCRIPTION, ADDED_BY)
+VALUES (13, 2, 'TREC Maker', 'TREC Maker', 1);
+
+INSERT INTO ROLE (ROLE_ID, USER_CAT_ID, ROLE_NAME, DESCRIPTION, ADDED_BY)
+VALUES (14, 2, 'TREC Viewer', 'TREC Viewer', 1);
+
+INSERT INTO ROLE (ROLE_ID, USER_CAT_ID, ROLE_NAME, DESCRIPTION, ADDED_BY)
+VALUES (15, 3, 'BSEC Admin', 'TREC Admin', 1);
+
+INSERT INTO ROLE (ROLE_ID, USER_CAT_ID, ROLE_NAME, DESCRIPTION, ADDED_BY)
+VALUES (16, 3, 'BSEC Checker', 'BSEC Checker', 1);
+
+INSERT INTO ROLE (ROLE_ID, USER_CAT_ID, ROLE_NAME, DESCRIPTION, ADDED_BY)
+VALUES (17, 3, 'BSEC Maker', 'BSEC Maker', 1);
+
+INSERT INTO ROLE (ROLE_ID, USER_CAT_ID, ROLE_NAME, DESCRIPTION, ADDED_BY)
+VALUES (18, 3, 'BSEC Viewer', 'BSEC Viewer', 1);
+
+commit;
+select * from ROLE;
+
+------------------------------------------------------
+TMS_USER.MENU
+------------------------------------------------------
+
+CREATE TABLE  MENU
+(
+    MENU_ID    NUMBER(5) NOT NULL, 
+    MENU_NAME  VARCHAR2(100) NOT NULL,
+    MENU_LINK  VARCHAR2(255),
+    PARENT_ID  NUMBER(5),   
+    MENU_ORDER NUMBER(3),
+
+    ADDED_AT         DATE DEFAULT SYSDATE NOT NULL,        
+    ADDED_BY         NUMBER(10) NOT NULL,                    
+    UPDATED_AT       DATE,                                
+    UPDATED_BY       NUMBER(10), 
+
+    IS_ACTIVE        NUMBER(1) DEFAULT 1 NOT NULL, -- Temporary activation status       
+    IS_DELETED       NUMBER(1) DEFAULT 0 NOT NULL, -- Soft delete flag   
+
+    CONSTRAINT PK_MENU PRIMARY KEY (MENU_ID),  
+    CONSTRAINT FK_MENU_ADDED_BY FOREIGN KEY (ADDED_BY) REFERENCES USER_INFO(USER_ID),
+    CONSTRAINT FK_MENU_UPDATED_BY FOREIGN KEY (UPDATED_BY) REFERENCES USER_INFO(USER_ID)  
+);
+
+-- Insert All Menus from the Menu Script
+
+------------------------------------------------------
+TMS_USER.ROLE_MENU
+------------------------------------------------------
+
+CREATE TABLE  ROLE_MENU
+(
+    ROLE_MENU_ID NUMBER(10) NOT NULL,
+    ROLE_ID         NUMBER(5) NOT NULL, 
+    MENU_ID         NUMBER(5) NOT NULL,
+    IS_SELECT       NUMBER(1) DEFAULT 1 NOT NULL,
+    IS_INSERT       NUMBER(1) DEFAULT 1 NOT NULL,
+    IS_UPDATE       NUMBER(1) DEFAULT 1 NOT NULL,
+    IS_DELETE       NUMBER(1) DEFAULT 0 NOT NULL,
+
+    ADDED_AT         DATE DEFAULT SYSDATE NOT NULL,        
+    ADDED_BY         NUMBER(10) NOT NULL,                    
+    UPDATED_AT       DATE,                                
+    UPDATED_BY       NUMBER(10), 
+
+    IS_ACTIVE        NUMBER(1) DEFAULT 1 NOT NULL, -- Temporary activation status       
+    IS_DELETED       NUMBER(1) DEFAULT 0 NOT NULL, -- Soft delete flag   
+
+    CONSTRAINT PK_ROLE_MENU PRIMARY KEY (ROLE_MENU_ID),  
+    CONSTRAINT FK_ROLE_MENU_ROLE FOREIGN KEY (ROLE_ID) REFERENCES ROLE(ROLE_ID) ON DELETE CASCADE,
+    CONSTRAINT FK_ROLE_MENU_MENU FOREIGN KEY (MENU_ID) REFERENCES MENU(MENU_ID) ON DELETE CASCADE,
+    CONSTRAINT FK_ROLE_MENU_ADDED_BY FOREIGN KEY (ADDED_BY) REFERENCES USER_INFO(USER_ID),
+    CONSTRAINT FK_ROLE_MENU_UPDATED_BY FOREIGN KEY (UPDATED_BY) REFERENCES USER_INFO(USER_ID)  
+);
+
+-- Insert All Menus for the Role Named "SuperAdmin"
+
+INSERT INTO ROLE_MENU (ROLE_MENU_ID,ROLE_ID,MENU_ID,IS_SELECT,IS_INSERT,IS_UPDATE,IS_DELETE,ADDED_BY)
+SELECT ROWNUM + ( SELECT NVL(MAX(ROLE_MENU_ID), 0) FROM ROLE_MENU ) AS ROLE_MENU_ID,
+    (SELECT ROLE_ID FROM ROLE WHERE ROLE_NAME = 'SuperAdmin') AS ROLE_ID,
+    m.MENU_ID,
+    1 AS IS_SELECT,
+    1 AS IS_INSERT,
+    1 AS IS_UPDATE,
+    1 AS IS_DELETE,
+    1 AS ADDED_BY
+FROM MENU m
+WHERE m.IS_ACTIVE = 1;
+
+-- Insert Menus ATMS Report, TREC HOME, About Us, Contact for the Role Named "Trec Admin"
+
+commit;
+
+
+-- for migrating one to anther databse
+SELECT count(*) FROM ROLE_MENU;
+SELECT * FROM ROLE_MENU;
+--delete from ROLE_MENU;
+
+SELECT 
+    'INSERT INTO ROLE_MENU (ROLE_MENU_ID, ROLE_ID, MENU_ID, IS_SELECT, IS_INSERT, IS_UPDATE, IS_DELETE, ADDED_BY) VALUES ('
+    || ROLE_MENU_ID || ', '
+    || ROLE_ID || ', '
+    || MENU_ID || ', '
+    || IS_SELECT || ', '
+    || IS_INSERT || ', '
+    || IS_UPDATE || ', '
+    || IS_DELETE || ', '
+    || ADDED_BY || ');' AS INSERT_QUERY
+FROM ROLE_MENU;
+
+commit;
+
+------------------------------------------------------
+TMS_USER.USER_ROLE
+------------------------------------------------------
+
+CREATE TABLE USER_ROLE
+(
+    USER_ROLE_ID  NUMBER(10) NOT NULL,
+    USER_ID       NUMBER(10) NOT NULL, 
+    ROLE_ID       NUMBER(5) NOT NULL,
+
+    ADDED_AT      DATE DEFAULT SYSDATE NOT NULL,        
+    ADDED_BY      NUMBER(10) NOT NULL,                    
+    UPDATED_AT    DATE,                                
+    UPDATED_BY    NUMBER(10), 
+
+    IS_ACTIVE     NUMBER(1) DEFAULT 1 NOT NULL, -- Temporary activation status       
+    IS_DELETED    NUMBER(1) DEFAULT 0 NOT NULL, -- Soft delete flag   
+
+    CONSTRAINT PK_USER_ROLE PRIMARY KEY (USER_ROLE_ID),  
+    CONSTRAINT FK_USER_ROLE_USER_ID FOREIGN KEY (USER_ID) REFERENCES USER_INFO(USER_ID),
+    CONSTRAINT FK_USER_ROLE_ROLE_ID FOREIGN KEY (ROLE_ID) REFERENCES ROLE(ROLE_ID),
+    CONSTRAINT FK_USER_ROLE_ADDED_BY FOREIGN KEY (ADDED_BY) REFERENCES USER_INFO(USER_ID),
+    CONSTRAINT FK_USER_ROLE_UPDATED_BY FOREIGN KEY (UPDATED_BY) REFERENCES USER_INFO(USER_ID)  
+);
+
+select * from user_role;
+select count(*) from user_role; -- 361
+--delete from user_role;
+commit;
+
+--Insert User Role for Super Admin Using Subquery
+INSERT INTO USER_ROLE ( USER_ROLE_ID,USER_ID,ROLE_ID,ADDED_BY)
+SELECT
+    NVL((SELECT MAX(USER_ROLE_ID) FROM USER_ROLE), 0) + 1 AS USER_ROLE_ID, 1 AS USER_ID, -- userid = 1 super admin
+    (SELECT ROLE_ID FROM ROLE WHERE ROLE_NAME = 'SuperAdmin' AND ROWNUM = 1) AS ROLE_ID, 1 AS ADDED_BY
+FROM DUAL; --1
+
+--Insert User Role for DSE Viewer Using Subquery
+INSERT INTO USER_ROLE (USER_ROLE_ID, USER_ID, ROLE_ID, ADDED_BY)
+SELECT
+    NVL((SELECT MAX(USER_ROLE_ID) FROM USER_ROLE), 0) + ROW_NUMBER() OVER (ORDER BY u.USER_ID) AS USER_ROLE_ID,
+    u.USER_ID,
+    r.ROLE_ID,
+    1 AS ADDED_BY
+FROM USER_INFO u
+JOIN USER_PROFILE p ON u.USER_PROFILE_ID = p.USER_PROFILE_ID
+JOIN ROLE r ON r.ROLE_NAME = 'Viewer'
+WHERE p.USER_CAT_ID = 1 --user category 1
+and u.STATUS= 'ACTIVE'
+and u.USER_ID <> 1 -- as -- userid = 1 super admin
+  AND NOT EXISTS (
+      SELECT 1 
+      FROM USER_ROLE ur 
+      WHERE ur.USER_ID = u.USER_ID AND ur.ROLE_ID = r.ROLE_ID
+  ); --33
+
+--Insert User Role for DSE TAD 
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),7,5,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),8,5,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),9,5,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),10,5,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),11,5,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),12,5,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),13,5,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),14,5,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),15,5,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),16,5,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),17,5,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),18,5,1);
+
+--Insert User Role for DSE APP 
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),19,7,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),20,7,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),21,7,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),22,7,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),23,7,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),24,7,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),25,7,1);
+
+-- Network Development
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),26,9,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),27,9,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),28,9,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),29,9,1);
+Insert into USER_ROLE (USER_ROLE_ID,USER_ID,ROLE_ID, ADDED_BY) values ((SELECT MAX(USER_ROLE_ID) + 1 FROM USER_ROLE),30,9,1);
+
+--Insert User Role for TREC Admin Using Subquery
+INSERT INTO USER_ROLE (USER_ROLE_ID, USER_ID, ROLE_ID, ADDED_BY)
+SELECT
+    NVL((SELECT MAX(USER_ROLE_ID) FROM USER_ROLE), 0) + ROW_NUMBER() OVER (ORDER BY u.USER_ID) AS USER_ROLE_ID,
+    u.USER_ID,
+    r.ROLE_ID,
+    1 AS ADDED_BY
+FROM USER_INFO u
+JOIN USER_PROFILE p ON u.USER_PROFILE_ID = p.USER_PROFILE_ID
+JOIN ROLE r ON r.ROLE_NAME = 'TREC Admin'
+WHERE p.USER_CAT_ID = 2 --user category 2
+and u.STATUS= 'ACTIVE'
+  AND NOT EXISTS (
+      SELECT 1 
+      FROM USER_ROLE ur 
+      WHERE ur.USER_ID = u.USER_ID AND ur.ROLE_ID = r.ROLE_ID
+  ); -- 303 rows inserted.
+
+commit;
+
+-- for migrating one to anther databse
+SELECT count(*) FROM USER_ROLE;
+SELECT * FROM USER_ROLE;
+--delete from USER_ROLE;
+commit;
+
+SELECT 
+    'INSERT INTO USER_ROLE (USER_ROLE_ID, USER_ID, ROLE_ID, ADDED_BY) VALUES ('
+    || USER_ROLE_ID || ', '
+    || USER_ID || ', '
+    || ROLE_ID || ', '
+    || ADDED_BY || ');' AS INSERT_QUERY
+FROM USER_ROLE;
+commit;
+
+------------------------------------------------------
+TMS_USER.VW_MENU
+------------------------------------------------------
+
+CREATE OR REPLACE FORCE VIEW "TMS_USER"."VW_MENU"  
+( "MENU_ID", "MENU_NAME", "MENU_LINK", "MENU_ORDER",
+  "PARENT_MENU_ID", "PARENT_MENU_NAME", "PARENT_MENU_LINK",
+  "STATUS", "ADDED_AT", "ADDED_BY", "UPDATED_AT",  "UPDATED_BY"
+)
+AS
+SELECT
+    m.MENU_ID,
+    m.MENU_NAME,
+    m.MENU_LINK,
+    m.MENU_ORDER,
+
+    pm.MENU_ID AS PARENT_MENU_ID,
+    pm.MENU_NAME AS PARENT_MENU_NAME,
+    pm.MENU_LINK AS PARENT_MENU_LINK,
+
+    CASE WHEN m.IS_ACTIVE IN ('1') THEN 'ACTIVE' ELSE 'INACTIVE' END AS STATUS,
+    m.ADDED_AT,
+    m.ADDED_BY,
+    m.UPDATED_AT,
+    m.UPDATED_BY
+FROM MENU m
+LEFT JOIN MENU pm ON m.PARENT_ID = pm.MENU_ID
+WHERE m.IS_DELETED = 0;
+
+select * from VW_MENU;
+
+------------------------------------------------------

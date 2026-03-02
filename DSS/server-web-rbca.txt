@@ -1,0 +1,48 @@
+
+
+**************************************************************
+                      DSS WEB SERVER
+**************************************************************
+
+RBCA PROD APP Server
+--------------------
+Remote Desktop
+Server Name : 
+IP : 10.218.50.139
+user : administrator
+pass : o)3D.xj/0O
+
+Website Link Live: https://dss.dse.com.bd/
+
+Username: kamruzzaman.dse_self
+Password: Dse@1234567
+
+Username: mahsin.dse_self
+Password: Dse@1234567
+
+
+RBCA UAT APP Server
+--------------------
+Remote Desktop
+Server Name : 
+IP : 10.228.50.137
+user : administrator
+pass : o)3D.xj/0O
+
+Website Link UAT : https://dssuat.dse.com.bd/
+Username:
+Password:
+
+
+RBCA Test APP Server
+--------------------
+Remote Desktop
+Server Name : 
+IP : 10.228.54.136 
+user : administrator
+pass : abc
+
+Website Link for TEST :
+Username:
+Password:
+
