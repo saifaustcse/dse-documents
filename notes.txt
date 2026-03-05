@@ -86,6 +86,8 @@ responsible = দায়িত্বশীল
 disruption =  ব্যাঘাত
 provision = ব্যবস্থা = বন্দোবস্ত
 
+revamp = renovate, revise, or restructure something to improve its appearance, functionality, or efficiency
+
 
 
 
